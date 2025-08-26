@@ -215,7 +215,7 @@ const filters = [
     key: "out-stock",
     label: "Out of Stock",
     icon: PackageX,
-    color: "bg-red-100 text-red-700 hover:bg-red-200",
+    color: "bg-red-400 text-red-900 hover:bg-red-300",
   },
 ];
 
@@ -402,7 +402,7 @@ export default function ProductsPage() {
                     {product.stock === 0 ? (
                       <Badge variant="destructive">Out of Stock</Badge>
                     ) : product.stock < 10 ? (
-                      <Badge variant="secondary">Low Stock</Badge>
+                      <Badge className="bg-red-500 text-white">Low Stock</Badge>
                     ) : (
                       <Badge>In Stock</Badge>
                     )}
