@@ -41,6 +41,36 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 const products = [
   {
     name: "Basmati Rice 5kg",
@@ -235,6 +265,31 @@ export default function ProductsPage() {
     startIndex + rowsPerPage
   );
 
+  const formSchema = z.object({
+    name: z.string().min(2, "Name is required"),
+    category: z.string().min(1, "Category is required"),
+    stock: z.coerce.number().min(0),
+    barcode: z.string().min(3),
+    costPrice: z.coerce.number().min(0),
+    sellingPrice: z.coerce.number().min(0),
+  });
+
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      category: "",
+      stock: 0,
+      barcode: "",
+      costPrice: 0,
+      sellingPrice: 0,
+    },
+  });
+
+  function onSubmit(values) {
+    console.log(values);
+  }
+
   return (
     <div className="px-6 py-4 space-y-4 w-full h-[calc(100vh-90px)] overflow-y-auto">
       {/* Header */}
@@ -245,9 +300,220 @@ export default function ProductsPage() {
             Manage your inventory and product catalog
           </p>
         </div>
-        <Button className="flex items-center gap-2 cursor-pointer">
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button className="flex items-center gap-2 cursor-pointer">
+              <Plus className="h-4 w-4" /> Add Product
+            </Button>
+          </DialogTrigger>
+
+          <DialogContent className="sm:max-w-lg max-w-[95%]">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-semibold">
+                Add New Product
+              </DialogTitle>
+            </DialogHeader>
+
+            {/* Form with react-hook-form */}
+
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Product Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter product name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="category"
+                    className="w-full"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-700 font-medium">
+                          Category
+                        </FormLabel>
+                        <FormControl>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <SelectTrigger className="w-full rounded-lg border-gray-300 focus:ring-2">
+                              <SelectValue placeholder="Select a category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="grains">🌾 Grains</SelectItem>
+                              <SelectItem value="oil-ghee">
+                                🛢 Oil & Ghee
+                              </SelectItem>
+                              <SelectItem value="sweeteners">
+                                🍯 Sweeteners
+                              </SelectItem>
+                              <SelectItem value="beverages">
+                                🥤 Beverages
+                              </SelectItem>
+                              <SelectItem value="dairy">🥛 Dairy</SelectItem>
+                              <SelectItem value="snacks">🍪 Snacks</SelectItem>
+                              <SelectItem value="spices">🌶 Spices</SelectItem>
+                              <SelectItem value="bakery">🍞 Bakery</SelectItem>
+                              <SelectItem value="frozen">
+                                ❄️ Frozen Items
+                              </SelectItem>
+                              <SelectItem value="personal-care">
+                                🧴 Personal Care
+                              </SelectItem>
+                              <SelectItem value="household">
+                                🏠 Household Essentials
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="stock"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Stock</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="Enter stock quantity"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="barcode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-700 font-medium">
+                          Barcode
+                        </FormLabel>
+                        <FormControl>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              placeholder="Scan or enter barcode"
+                              className="rounded-xl border-gray-300 focus:ring-2 focus:ring-indigo-500"
+                              {...field}
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="rounded-xl flex items-center gap-2 cursor-pointer"
+                              onClick={() => {
+                                // 👉 open scanner modal or trigger barcode scanner here
+                                console.log("Open barcode scanner");
+                              }}
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-4 w-4 text-indigo-600"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M4 7V4a1 1 0 011-1h3M4 17v3a1 1 0 001 1h3m10-3v3a1 1 0 01-1 1h-3m4-13V4a1 1 0 00-1-1h-3M7 7h.01M7 17h.01M17 7h.01M17 17h.01"
+                                />
+                              </svg>
+                              Scan
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="costPrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Cost Price (₹)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="0.00"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="sellingPrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Selling Price (₹)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="0.00"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <DialogFooter className="flex justify-end gap-2 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => form.reset()}
+                    className="cursor-pointer"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="bg-black text-white hover:bg-gray-800 cursor-pointer"
+                  >
+                    Save Product
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+
+        {/* <Button className="flex items-center gap-2 cursor-pointer">
           <Plus className="h-4 w-4" /> Add Product
-        </Button>
+        </Button> */}
       </div>
 
       {/* Stats Cards */}
@@ -262,9 +528,7 @@ export default function ProductsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-extrabold text-gray-900">
-              {totalProducts}
-            </p>
+            <p className="text-3xl font-bold text-gray-900">{totalProducts}</p>
             <p className="text-xs text-gray-500 mt-1">Updated just now</p>
           </CardContent>
         </Card>
@@ -279,7 +543,7 @@ export default function ProductsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-extrabold text-gray-900">{lowStock}</p>
+            <p className="text-3xl font-bold text-gray-900">{lowStock}</p>
             <p className="text-xs text-gray-500 mt-1">Updated just now</p>
           </CardContent>
         </Card>
@@ -294,9 +558,7 @@ export default function ProductsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-extrabold text-gray-900">
-              {outOfStock}
-            </p>
+            <p className="text-3xl font-bold text-gray-900">{outOfStock}</p>
             <p className="text-xs text-gray-500 mt-1">Updated just now</p>
           </CardContent>
         </Card>
@@ -311,9 +573,7 @@ export default function ProductsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-extrabold text-gray-900">
-              {categories}
-            </p>
+            <p className="text-3xl font-bold text-gray-900">{categories}</p>
             <p className="text-xs text-gray-500 mt-1">Updated just now</p>
           </CardContent>
         </Card>
