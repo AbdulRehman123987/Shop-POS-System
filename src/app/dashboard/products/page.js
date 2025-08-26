@@ -510,10 +510,6 @@ export default function ProductsPage() {
             </Form>
           </DialogContent>
         </Dialog>
-
-        {/* <Button className="flex items-center gap-2 cursor-pointer">
-          <Plus className="h-4 w-4" /> Add Product
-        </Button> */}
       </div>
 
       {/* Stats Cards */}

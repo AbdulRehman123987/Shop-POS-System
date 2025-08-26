@@ -43,6 +43,25 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { email, z } from "zod";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 
 const customers = [
   {
@@ -288,6 +307,25 @@ export default function CustomersPage() {
     startIndex + rowsPerPage
   );
 
+  const formSchema = z.object({
+    name: z.string().min(2, "Name is required"),
+    email: z.string().email("Invalid email"),
+    phone: z.string().min(11, "Phone number is required"),
+  });
+
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+    },
+  });
+
+  function onSubmit(values) {
+    console.log(values);
+  }
+
   return (
     <div className="px-6 py-4 space-y-4 w-full h-[calc(100vh-90px)] overflow-y-auto">
       {/* Header */}
@@ -298,9 +336,103 @@ export default function CustomersPage() {
             Manage customers account and credit transactions
           </p>
         </div>
-        <Button className="flex items-center gap-2 cursor-pointer">
-          <Plus className="h-4 w-4" /> Add Customer
-        </Button>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button className="flex items-center gap-2 cursor-pointer">
+              <Plus className="h-4 w-4" /> Add Customer
+            </Button>
+          </DialogTrigger>
+
+          <DialogContent className="sm:max-w-lg max-w-[95%]">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-semibold">
+                Add New Product
+              </DialogTitle>
+            </DialogHeader>
+
+            {/* Form with react-hook-form */}
+
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
+                <div className="grid grid-cols-1">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter customer name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1">
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder="Enter customer email"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1">
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Phone Number</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="03000xxxxx"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <DialogFooter className="flex justify-end gap-2 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => form.reset()}
+                    className="cursor-pointer"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="bg-black text-white hover:bg-gray-800 cursor-pointer"
+                  >
+                    Add Customer
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Stats Cards */}
@@ -420,10 +552,14 @@ export default function CustomersPage() {
             {paginatedCustomers.map((c) => (
               <TableRow key={c.id}>
                 <TableCell className="font-medium">{c.name}</TableCell>
-                <TableCell>{c.email}</TableCell>
-                <TableCell>{c.phone}</TableCell>
-                <TableCell>₹{c.totalPurchases.toLocaleString()}</TableCell>
-                <TableCell>₹{c.totalPaid.toLocaleString()}</TableCell>
+                <TableCell className="text-gray-700">{c.email}</TableCell>
+                <TableCell className="text-gray-700">{c.phone}</TableCell>
+                <TableCell className="text-gray-700">
+                  ₹{c.totalPurchases.toLocaleString()}
+                </TableCell>
+                <TableCell className="text-gray-700">
+                  ₹{c.totalPaid.toLocaleString()}
+                </TableCell>
                 <TableCell>
                   {c.outstandingBalance > 0 ? (
                     <Badge variant="destructive">
