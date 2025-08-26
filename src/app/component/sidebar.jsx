@@ -10,16 +10,17 @@ import {
   LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export function Sidebar() {
   const [active, setActive] = useState("Sales");
 
   const menuItems = [
-    { name: "Sales", icon: ShoppingCart },
-    { name: "Products", icon: Package },
-    { name: "Customers", icon: Users },
-    { name: "Reports", icon: BarChart2 },
-    { name: "Settings", icon: Settings },
+    { name: "Sales", icon: ShoppingCart, path: "/dashboard/sales" },
+    { name: "Products", icon: Package, path: "/dashboard/products" },
+    { name: "Customers", icon: Users, path: "/dashboard/customers" },
+    { name: "Reports", icon: BarChart2, path: "/dashboard/reports" },
+    { name: "Settings", icon: Settings, path: "/dashboard/settings" },
   ];
 
   return (
@@ -27,20 +28,18 @@ export function Sidebar() {
       {/* Top Menu */}
       <nav className="space-y-2">
         {menuItems.map((item) => (
-          <Button
-            key={item.name}
-            variant="ghost"
-            onClick={() => setActive(item.name)}
-            className={`w-full justify-start gap-2 transition-colors cursor-pointer 
-              ${
-                active === item.name
-                  ? "bg-black text-white"
-                  : "hover:bg-gray-100"
-              }`}
-          >
-            <item.icon className="h-4 w-4" />
-            <span className="text-[15px]">{item.name}</span>
-          </Button>
+          <Link key={item.name} href={item.path}>
+            <Button
+              variant="ghost"
+              onClick={() => setActive(item.name)}
+              className={`w-full justify-start gap-2 transition-colors cursor-pointer 
+        ${active === item.name ? "bg-black text-white" : "hover:bg-gray-100"}
+      `}
+            >
+              <item.icon className="h-4 w-4" />
+              <span className="text-[15px]">{item.name}</span>
+            </Button>
+          </Link>
         ))}
       </nav>
 
