@@ -4,7 +4,7 @@ import { Search, ShoppingCart, Barcode } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, CreditCard } from "lucide-react";
 
 import {
   Dialog,
@@ -175,6 +175,12 @@ const productsData = [
   },
 ];
 
+const customers = [
+  { id: 1, name: "Ali Khan" },
+  { id: 2, name: "Sara Ahmed" },
+  { id: 3, name: "Usman Iqbal" },
+];
+
 export default function SalePage() {
   const [cart, setCart] = useState([]);
   const [search, setSearch] = useState("");
@@ -220,11 +226,18 @@ export default function SalePage() {
     console.log(values);
   }
 
+  const [sellModal, setSellModal] = useState(false);
+  const [outstandingModal, setOutstandingModal] = useState(false);
+  const [addCustomerModal, setAddCustomerModal] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState("");
+
+  const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+
   return (
     <div className="w-full h-[calc(100vh-80px)] overflow-y-auto">
       <div className="p-6 grid grid-cols-1 lg:grid-cols-4 gap-6 bg-gray-50">
         {/* Cart Section */}
-        {/* Cart Section */}
+
         <Card className="lg:col-span-1 h-[500px] shadow-xl border border-gray-200 rounded-2xl">
           <CardHeader className="flex flex-col gap-2 border-b pb-3">
             <div className="flex items-center justify-between w-full">
@@ -234,11 +247,7 @@ export default function SalePage() {
                   Cart ({cart.length} items)
                 </CardTitle>
               </div>
-              {/* 👉 Total Price */}
-              <span className="text-lg font-bold text-gray-800">
-                ₹
-                {cart.reduce((total, item) => total + item.price * item.qty, 0)}
-              </span>
+              <span className="text-lg font-bold text-gray-800">₹{total}</span>
             </div>
           </CardHeader>
 
@@ -269,11 +278,217 @@ export default function SalePage() {
               ))
             )}
           </CardContent>
+
+          {/* Sell Button */}
+          {cart.length > 0 && (
+            <div>
+              <Dialog open={sellModal} onOpenChange={setSellModal}>
+                <DialogTrigger asChild>
+                  <div className="w-[80%] mx-auto gap-1 flex justify-center items-center py-2 rounded-lg cursor-pointer bg-black text-white text-lg">
+                    <CreditCard size={18} />
+                    <span>Sells</span>
+                  </div>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle>Checkout</DialogTitle>
+                  </DialogHeader>
+                  <div className="w-full h-[350px] overflow-y-auto space-y-3">
+                    {cart.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex justify-between border-b pb-2"
+                      >
+                        <span>{item.name}</span>
+                        <span>
+                          {item.qty} × ₹{item.price}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-between font-bold text-lg">
+                    <span>Total:</span>
+                    <span>₹{total}</span>
+                  </div>
+                  <DialogFooter className="flex gap-3 justify-end pt-4">
+                    <Button
+                      className="bg-green-600 text-white cursor-pointer"
+                      onClick={() => {
+                        setSellModal(false);
+                        setCart([]);
+                      }}
+                    >
+                      Paid
+                    </Button>
+                    <Button
+                      className="bg-yellow-500 text-white cursor-pointer"
+                      onClick={() => {
+                        setSellModal(false);
+                        setOutstandingModal(true);
+                      }}
+                    >
+                      Outstanding
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+          )}
         </Card>
 
-        {/* Products Section */}
+        {/* Outstanding Modal */}
+        <Dialog open={outstandingModal} onOpenChange={setOutstandingModal}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Select Customer</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <Select onValueChange={(val) => setSelectedCustomer(val)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a customer" />
+                </SelectTrigger>
+                <SelectContent>
+                  {customers.map((c) => (
+                    <SelectItem key={c.id} value={c.name}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  setOutstandingModal(false);
+                  setAddCustomerModal(true);
+                }}
+              >
+                + Add New Customer
+              </Button>
+            </div>
+
+            <DialogFooter className="pt-4">
+              <Button
+                disabled={!selectedCustomer}
+                onClick={() => {
+                  console.log("Outstanding assigned to:", selectedCustomer);
+                  setOutstandingModal(false);
+                  setCart([]); // clear cart after assigning
+                }}
+              >
+                Save
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Add Customer Modal (You already have a form, so plug it here) */}
+        <Dialog open={addCustomerModal} onOpenChange={setAddCustomerModal}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Add Customer</DialogTitle>
+            </DialogHeader>
+            <DialogContent className="sm:max-w-lg max-w-[95%]">
+              <DialogHeader>
+                <DialogTitle className="text-xl font-semibold">
+                  Add New Product
+                </DialogTitle>
+              </DialogHeader>
+
+              {/* Form with react-hook-form */}
+
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-4"
+                >
+                  <div className="grid grid-cols-1">
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Name</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Enter customer name"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1">
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="email"
+                              placeholder="Enter customer email"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1">
+                    <FormField
+                      control={form.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Phone Number</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              placeholder="03000xxxxx"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <DialogFooter className="flex justify-end gap-2 pt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => form.reset()}
+                      className="cursor-pointer"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      className="bg-black text-white hover:bg-gray-800 cursor-pointer"
+                      onClick={() => {
+                        console.log("Customer Added!");
+                        setAddCustomerModal(false);
+                      }}
+                    >
+                      Add Customer
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </Form>
+            </DialogContent>
+          </DialogContent>
+        </Dialog>
+
         <div className="lg:col-span-3 space-y-6">
-          {/* Search & Actions */}
           <div className="flex items-center w-[95%] gap-3 bg-white p-4 rounded-2xl shadow-lg border border-gray-100">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -530,7 +745,7 @@ export default function SalePage() {
                 </Form>
               </DialogContent>
             </Dialog>
-            {/* <Button className="px-6 py-2 rounded-xl">Add</Button> */}
+
             <Button variant="outline" className="rounded-xl cursor-pointer">
               All
             </Button>
