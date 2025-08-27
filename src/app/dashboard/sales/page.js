@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Trash2, Plus, CreditCard } from "lucide-react";
+import Link from "next/link";
 
 import {
   Dialog,
@@ -184,6 +185,11 @@ const customers = [
 export default function SalePage() {
   const [cart, setCart] = useState([]);
   const [search, setSearch] = useState("");
+  const [sellModal, setSellModal] = useState(false);
+  const [outstandingModal, setOutstandingModal] = useState(false);
+  const [addCustomerModal, setAddCustomerModal] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState("");
+  const [customerSearch, setCustomerSearch] = useState("");
 
   const addToCart = (product) => {
     setCart((prev) => {
@@ -226,10 +232,9 @@ export default function SalePage() {
     console.log(values);
   }
 
-  const [sellModal, setSellModal] = useState(false);
-  const [outstandingModal, setOutstandingModal] = useState(false);
-  const [addCustomerModal, setAddCustomerModal] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState("");
+  const filteredCustomers = customers.filter((c) =>
+    c.name.toLowerCase().includes(customerSearch.toLowerCase())
+  );
 
   const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
@@ -293,7 +298,7 @@ export default function SalePage() {
                   <DialogHeader>
                     <DialogTitle>Checkout</DialogTitle>
                   </DialogHeader>
-                  <div className="w-full h-[350px] overflow-y-auto space-y-3">
+                  <div className="w-full h-[300px] overflow-y-auto space-y-3">
                     {cart.map((item) => (
                       <div
                         key={item.id}
@@ -336,26 +341,47 @@ export default function SalePage() {
           )}
         </Card>
 
-        {/* Outstanding Modal */}
         <Dialog open={outstandingModal} onOpenChange={setOutstandingModal}>
           <DialogContent className="sm:max-w-lg">
             <DialogHeader>
               <DialogTitle>Select Customer</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
-              <Select onValueChange={(val) => setSelectedCustomer(val)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose a customer" />
-                </SelectTrigger>
-                <SelectContent>
-                  {customers.map((c) => (
-                    <SelectItem key={c.id} value={c.name}>
-                      {c.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
 
+            <div className="space-y-4">
+              {/* Search Input */}
+              <Input
+                type="text"
+                placeholder="Search customer by name..."
+                value={customerSearch}
+                onChange={(e) => setCustomerSearch(e.target.value)}
+              />
+
+              {/* Customer List */}
+              <div className="max-h-48 overflow-y-auto space-y-2">
+                {filteredCustomers.length > 0 ? (
+                  filteredCustomers.map((c) => (
+                    <div
+                      key={c.id}
+                      onClick={() => setSelectedCustomer(c)}
+                      className={`p-3 rounded-lg border cursor-pointer transition hover:bg-accent ${
+                        selectedCustomer?.id === c.id
+                          ? "border-primary bg-primary/10"
+                          : "border-gray-200"
+                      }`}
+                    >
+                      <p className="font-medium">{c.name}</p>
+                      <p className="text-sm text-muted-foreground">{c.email}</p>
+                      <p className="text-sm text-muted-foreground">{c.phone}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center">
+                    No customers found
+                  </p>
+                )}
+              </div>
+
+              {/* Add New Customer */}
               <Button
                 variant="outline"
                 className="w-full"
@@ -366,24 +392,38 @@ export default function SalePage() {
               >
                 + Add New Customer
               </Button>
+
+              {/* Selected Customer Preview */}
+              {selectedCustomer && (
+                <div className="mt-4 p-3 border rounded-lg bg-muted">
+                  <p className="font-medium">{selectedCustomer.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedCustomer.email}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedCustomer.phone}
+                  </p>
+                </div>
+              )}
             </div>
 
+            {/* Save Button */}
             <DialogFooter className="pt-4">
               <Button
                 disabled={!selectedCustomer}
+                className="cursor-pointer"
                 onClick={() => {
                   console.log("Outstanding assigned to:", selectedCustomer);
                   setOutstandingModal(false);
                   setCart([]); // clear cart after assigning
                 }}
               >
-                Save
+                Add
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
-        {/* Add Customer Modal (You already have a form, so plug it here) */}
         <Dialog open={addCustomerModal} onOpenChange={setAddCustomerModal}>
           <DialogContent className="sm:max-w-lg">
             <DialogHeader>
@@ -477,6 +517,7 @@ export default function SalePage() {
                       onClick={() => {
                         console.log("Customer Added!");
                         setAddCustomerModal(false);
+                        setOutstandingModal(true);
                       }}
                     >
                       Add Customer
@@ -745,9 +786,12 @@ export default function SalePage() {
                 </Form>
               </DialogContent>
             </Dialog>
-
-            <Button variant="outline" className="rounded-xl cursor-pointer">
-              All
+            <Button
+              variant="outline"
+              className="rounded-xl cursor-pointer"
+              asChild
+            >
+              <Link href="/dashboard/products">All</Link>
             </Button>
           </div>
 

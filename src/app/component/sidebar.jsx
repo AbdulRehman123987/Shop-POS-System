@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { usePathname } from "next/navigation";
 import {
   ShoppingCart,
   Package,
@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export function Sidebar() {
-  const [active, setActive] = useState("Sales");
+  const pathname = usePathname();
 
   const menuItems = [
     { name: "Sales", icon: ShoppingCart, path: "/dashboard/sales" },
@@ -24,23 +24,26 @@ export function Sidebar() {
   ];
 
   return (
-    <aside className="w-56 border-r h-[calc(100vh-70px)]  p-4 flex flex-col justify-between">
+    <aside className="w-56 border-r h-[calc(100vh-70px)] p-4 flex flex-col justify-between">
       {/* Top Menu */}
       <nav className="space-y-2">
-        {menuItems.map((item) => (
-          <Link key={item.name} href={item.path}>
-            <Button
-              variant="ghost"
-              onClick={() => setActive(item.name)}
-              className={`w-full justify-start gap-2 transition-colors cursor-pointer 
-        ${active === item.name ? "bg-black text-white" : "hover:bg-gray-100"}
-      `}
-            >
-              <item.icon className="h-4 w-4" />
-              <span className="text-[15px]">{item.name}</span>
-            </Button>
-          </Link>
-        ))}
+        {menuItems.map((item) => {
+          const isActive = pathname === item.path;
+
+          return (
+            <Link key={item.name} href={item.path}>
+              <Button
+                variant="ghost"
+                className={`w-full justify-start gap-2 transition-colors cursor-pointer 
+                  ${isActive ? "bg-black text-white" : "hover:bg-gray-100"}
+                `}
+              >
+                <item.icon className="h-4 w-4" />
+                <span className="text-[15px]">{item.name}</span>
+              </Button>
+            </Link>
+          );
+        })}
       </nav>
 
       {/* Logout Button */}
