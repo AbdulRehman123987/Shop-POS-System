@@ -259,7 +259,7 @@ export default function SalePage() {
                   </span>
                   <button
                     onClick={() =>
-                      setCart(cart.filter((_, i) => i !== item.id))
+                      setCart(cart.filter((p) => p.id !== item.id))
                     }
                     className="text-red-500 hover:text-red-700 cursor-pointer"
                   >
@@ -289,7 +289,6 @@ export default function SalePage() {
               variant="outline"
               className="rounded-xl flex items-center gap-2 cursor-pointer"
               onClick={() => {
-                // 👉 open scanner modal or trigger barcode scanner here
                 console.log("Open barcode scanner");
               }}
             >
@@ -445,7 +444,6 @@ export default function SalePage() {
                                   variant="outline"
                                   className="rounded-xl flex items-center gap-2 cursor-pointer"
                                   onClick={() => {
-                                    // 👉 open scanner modal or trigger barcode scanner here
                                     console.log("Open barcode scanner");
                                   }}
                                 >
