@@ -33,7 +33,7 @@ export default function SettingsPage() {
         onValueChange={setActiveTab}
         className="space-y-6"
       >
-        <TabsList className=" w-full bg-gray-100 rounded-xl p-1">
+        <TabsList className=" w-full bg-gray-100 rounded-xl p-0">
           <TabsTrigger value="shop" className="rounded-lg cursor-pointer">
             Shop Details
           </TabsTrigger>

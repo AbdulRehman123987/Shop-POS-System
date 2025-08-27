@@ -614,16 +614,28 @@ export default function CustomersPage() {
               />
             </PaginationItem>
 
-            {Array.from({ length: totalPages }, (_, i) => (
-              <PaginationItem key={i}>
-                <PaginationLink
-                  isActive={page === i + 1}
-                  onClick={() => setPage(i + 1)}
-                >
-                  {i + 1}
+            {/* Previous Page Number */}
+            {page > 1 && (
+              <PaginationItem>
+                <PaginationLink onClick={() => setPage(page - 1)}>
+                  {page - 1}
                 </PaginationLink>
               </PaginationItem>
-            ))}
+            )}
+
+            {/* Current Page */}
+            <PaginationItem>
+              <PaginationLink isActive>{page}</PaginationLink>
+            </PaginationItem>
+
+            {/* Next Page Number */}
+            {page < totalPages && (
+              <PaginationItem>
+                <PaginationLink onClick={() => setPage(page + 1)}>
+                  {page + 1}
+                </PaginationLink>
+              </PaginationItem>
+            )}
 
             <PaginationItem>
               <PaginationNext

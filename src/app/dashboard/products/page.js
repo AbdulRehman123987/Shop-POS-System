@@ -701,28 +701,42 @@ export default function ProductsPage() {
       <div className="flex justify-end p-3">
         <Pagination className="flex justify-end">
           <PaginationContent>
+            {/* Previous Button */}
             <PaginationItem>
               <PaginationPrevious
                 onClick={() => setPage((p) => Math.max(p - 1, 1))}
                 className={
                   page === 1
                     ? "pointer-events-none opacity-50"
-                    : " cursor-pointer"
+                    : "cursor-pointer"
                 }
               />
             </PaginationItem>
 
-            {Array.from({ length: totalPages }, (_, i) => (
-              <PaginationItem key={i}>
-                <PaginationLink
-                  isActive={page === i + 1}
-                  onClick={() => setPage(i + 1)}
-                >
-                  {i + 1}
+            {/* Previous Page Number */}
+            {page > 1 && (
+              <PaginationItem>
+                <PaginationLink onClick={() => setPage(page - 1)}>
+                  {page - 1}
                 </PaginationLink>
               </PaginationItem>
-            ))}
+            )}
 
+            {/* Current Page */}
+            <PaginationItem>
+              <PaginationLink isActive>{page}</PaginationLink>
+            </PaginationItem>
+
+            {/* Next Page Number */}
+            {page < totalPages && (
+              <PaginationItem>
+                <PaginationLink onClick={() => setPage(page + 1)}>
+                  {page + 1}
+                </PaginationLink>
+              </PaginationItem>
+            )}
+
+            {/* Next Button */}
             <PaginationItem>
               <PaginationNext
                 onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
