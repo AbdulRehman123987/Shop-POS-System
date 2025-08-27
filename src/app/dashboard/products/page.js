@@ -251,6 +251,7 @@ const filters = [
 
 export default function ProductsPage() {
   const [active, setActive] = useState("in-stock");
+  const [openProductDialog, setOpenProductDialog] = useState(false);
   const totalProducts = products.length;
   const lowStock = products.filter((p) => p.stock < 10).length;
   const outOfStock = products.filter((p) => p.stock === 0).length;
@@ -300,7 +301,7 @@ export default function ProductsPage() {
             Manage your inventory and product catalog
           </p>
         </div>
-        <Dialog>
+        <Dialog open={openProductDialog} onOpenChange={setOpenProductDialog}>
           <DialogTrigger asChild>
             <Button className="flex items-center gap-2 cursor-pointer">
               <Plus className="h-4 w-4" /> Add Product
@@ -313,8 +314,6 @@ export default function ProductsPage() {
                 Add New Product
               </DialogTitle>
             </DialogHeader>
-
-            {/* Form with react-hook-form */}
 
             <Form {...form}>
               <form
@@ -494,7 +493,10 @@ export default function ProductsPage() {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => form.reset()}
+                    onClick={() => {
+                      form.reset();
+                      setOpenProductDialog(false);
+                    }}
                     className="cursor-pointer"
                   >
                     Cancel

@@ -184,6 +184,7 @@ const customers = [
 
 export default function SalePage() {
   const [cart, setCart] = useState([]);
+  const [openProductDialog, setOpenProductDialog] = useState(false);
   const [search, setSearch] = useState("");
   const [sellModal, setSellModal] = useState(false);
   const [outstandingModal, setOutstandingModal] = useState(false);
@@ -564,7 +565,11 @@ export default function SalePage() {
               </svg>
               Scan
             </Button>
-            <Dialog>
+
+            <Dialog
+              open={openProductDialog}
+              onOpenChange={setOpenProductDialog}
+            >
               <DialogTrigger asChild>
                 <Button className="flex items-center gap-2 cursor-pointer">
                   <Plus className="h-4 w-4" /> Add Product
@@ -770,7 +775,10 @@ export default function SalePage() {
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={() => form.reset()}
+                        onClick={() => {
+                          form.reset();
+                          setOpenProductDialog(false);
+                        }}
                         className="cursor-pointer"
                       >
                         Cancel

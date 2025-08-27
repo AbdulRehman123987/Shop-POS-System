@@ -283,6 +283,7 @@ const filters = [
 
 export default function CustomersPage() {
   const [active, setActive] = useState("paid");
+  const [openCustomerModal, setOpenCustomerModal] = useState(false);
   const [page, setPage] = useState(1);
   const rowsPerPage = 6;
 
@@ -336,9 +337,12 @@ export default function CustomersPage() {
             Manage customers account and credit transactions
           </p>
         </div>
-        <Dialog>
+        <Dialog open={openCustomerModal} onOpenChange={setOpenCustomerModal}>
           <DialogTrigger asChild>
-            <Button className="flex items-center gap-2 cursor-pointer">
+            <Button
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={() => setOpenCustomerModal(true)}
+            >
               <Plus className="h-4 w-4" /> Add Customer
             </Button>
           </DialogTrigger>
@@ -346,7 +350,7 @@ export default function CustomersPage() {
           <DialogContent className="sm:max-w-lg max-w-[95%]">
             <DialogHeader>
               <DialogTitle className="text-xl font-semibold">
-                Add New Product
+                Add New Customer
               </DialogTitle>
             </DialogHeader>
 
@@ -417,7 +421,10 @@ export default function CustomersPage() {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => form.reset()}
+                    onClick={() => {
+                      form.reset();
+                      setOpenCustomerModal(false);
+                    }}
                     className="cursor-pointer"
                   >
                     Cancel
