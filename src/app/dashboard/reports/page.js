@@ -12,6 +12,7 @@ import {
   DollarSign,
   Users,
   Package,
+  Calendar,
 } from "lucide-react";
 import {
   PieChart,
@@ -71,24 +72,35 @@ export default function ReportsPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">Export CSV</Button>
-          <Button variant="outline">Export Excel</Button>
+          <Button variant="outline" className="cursor-pointer">
+            Export CSV
+          </Button>
+          <Button variant="outline" className="cursor-pointer">
+            Export Excel
+          </Button>
         </div>
       </div>
 
       {/* Tabs */}
       <Tabs defaultValue="daily" className="w-full">
         <TabsList className="grid grid-cols-3 w-[400px]">
-          <TabsTrigger value="daily">Daily</TabsTrigger>
-          <TabsTrigger value="weekly">Weekly</TabsTrigger>
-          <TabsTrigger value="monthly">Monthly</TabsTrigger>
+          <TabsTrigger value="daily" className="cursor-pointer">
+            Daily
+          </TabsTrigger>
+          <TabsTrigger value="weekly" className="cursor-pointer">
+            Weekly
+          </TabsTrigger>
+          <TabsTrigger value="monthly" className="cursor-pointer">
+            Monthly
+          </TabsTrigger>
         </TabsList>
 
         {/* Daily Tab */}
         <TabsContent value="daily" className="space-y-6">
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card className="p-4">
+            {/* <Card className="p-4"> */}
+            <Card className="bg-gradient-to-br from-indigo-50 to-white shadow-md hover:shadow-xl transition-all duration-300 rounded-2xl border border-indigo-100">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Total Sales</CardTitle>
                 <DollarSign className="w-5 h-5 text-gray-400" />
@@ -101,7 +113,7 @@ export default function ReportsPage() {
               </CardContent>
             </Card>
 
-            <Card className="p-4">
+            <Card className="bg-gradient-to-br from-indigo-50 to-white shadow-md hover:shadow-xl transition-all duration-300 rounded-2xl border border-indigo-100">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Total Profit</CardTitle>
                 <BarChart2 className="w-5 h-5 text-gray-400" />
@@ -114,7 +126,7 @@ export default function ReportsPage() {
               </CardContent>
             </Card>
 
-            <Card className="p-4">
+            <Card className="bg-gradient-to-br from-indigo-50 to-white shadow-md hover:shadow-xl transition-all duration-300 rounded-2xl border border-indigo-100">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Transactions</CardTitle>
                 <ShoppingCart className="w-5 h-5 text-gray-400" />
@@ -127,7 +139,7 @@ export default function ReportsPage() {
               </CardContent>
             </Card>
 
-            <Card className="p-4">
+            <Card className="bg-gradient-to-br from-indigo-50 to-white shadow-md hover:shadow-xl transition-all duration-300 rounded-2xl border border-indigo-100">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Avg. Sale Value</CardTitle>
                 <Users className="w-5 h-5 text-gray-400" />
@@ -248,17 +260,376 @@ export default function ReportsPage() {
         </TabsContent>
 
         {/* You can add Weekly & Monthly content similarly */}
-        <TabsContent value="weekly">
-          <p className="text-center text-gray-500">
+        <TabsContent value="weekly" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* <Card className="p-4"> */}
+            <Card className="bg-gradient-to-br from-indigo-50 to-white shadow-md hover:shadow-xl transition-all duration-300 rounded-2xl border border-indigo-100">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Total Sales</CardTitle>
+                <DollarSign className="w-5 h-5 text-gray-400" />
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">₹98,770</p>
+                <span className="text-green-600 flex items-center text-sm">
+                  <TrendingUp className="w-4 h-4 mr-1" /> +12.5%
+                </span>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-indigo-50 to-white shadow-md hover:shadow-xl transition-all duration-300 rounded-2xl border border-indigo-100">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Total Profit</CardTitle>
+                <BarChart2 className="w-5 h-5 text-gray-400" />
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">₹23,250</p>
+                <span className="text-green-600 flex items-center text-sm">
+                  <TrendingUp className="w-4 h-4 mr-1" /> 23.5% margin
+                </span>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-indigo-50 to-white shadow-md hover:shadow-xl transition-all duration-300 rounded-2xl border border-indigo-100">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Transactions</CardTitle>
+                <ShoppingCart className="w-5 h-5 text-gray-400" />
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">286</p>
+                <span className="text-green-600 flex items-center text-sm">
+                  <TrendingUp className="w-4 h-4 mr-1" /> +8.2%
+                </span>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-indigo-50 to-white shadow-md hover:shadow-xl transition-all duration-300 rounded-2xl border border-indigo-100">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Avg. Sale Value</CardTitle>
+                <Users className="w-5 h-5 text-gray-400" />
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">₹345</p>
+                <span className="text-red-600 flex items-center text-sm">
+                  <TrendingDown className="w-4 h-4 mr-1" /> -2.1%
+                </span>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Charts */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Sales Trend</CardTitle>
+              </CardHeader>
+              <CardContent className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={salesTrend}>
+                    <XAxis dataKey="day" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line
+                      type="monotone"
+                      dataKey="sales"
+                      stroke="#4F46E5"
+                      strokeWidth={3}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Sales by Category</CardTitle>
+              </CardHeader>
+              <CardContent className="h-64">
+                <ResponsiveContainer>
+                  <PieChart>
+                    <Pie
+                      data={categoryData}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={90}
+                      label
+                    >
+                      {categoryData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Tables */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Top Selling */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Top Selling Products</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left border-b">
+                      <th className="py-2">Product</th>
+                      <th className="py-2">Units Sold</th>
+                      <th className="py-2">Revenue</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topProducts.map((p, i) => (
+                      <tr key={i} className="border-b">
+                        <td className="py-2">{p.name}</td>
+                        <td className="py-2">{p.sales}</td>
+                        <td className="py-2">₹{p.revenue}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </CardContent>
+            </Card>
+
+            {/* Low Stock */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Low Stock Alerts</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left border-b">
+                      <th className="py-2">Product</th>
+                      <th className="py-2">Stock Left</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {lowStock.map((p, i) => (
+                      <tr key={i} className="border-b">
+                        <td className="py-2">{p.name}</td>
+                        <td className="py-2">{p.stock}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </CardContent>
+            </Card>
+          </div>
+          {/* <p className="text-center text-gray-500">
             Weekly report coming soon...
-          </p>
+          </p> */}
         </TabsContent>
-        <TabsContent value="monthly">
-          <p className="text-center text-gray-500">
+        <TabsContent value="monthly" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* <Card className="p-4"> */}
+            <Card className="bg-gradient-to-br from-indigo-50 to-white shadow-md hover:shadow-xl transition-all duration-300 rounded-2xl border border-indigo-100">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Total Sales</CardTitle>
+                <DollarSign className="w-5 h-5 text-gray-400" />
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">₹98,770</p>
+                <span className="text-green-600 flex items-center text-sm">
+                  <TrendingUp className="w-4 h-4 mr-1" /> +12.5%
+                </span>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-indigo-50 to-white shadow-md hover:shadow-xl transition-all duration-300 rounded-2xl border border-indigo-100">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Total Profit</CardTitle>
+                <BarChart2 className="w-5 h-5 text-gray-400" />
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">₹23,250</p>
+                <span className="text-green-600 flex items-center text-sm">
+                  <TrendingUp className="w-4 h-4 mr-1" /> 23.5% margin
+                </span>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-indigo-50 to-white shadow-md hover:shadow-xl transition-all duration-300 rounded-2xl border border-indigo-100">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Transactions</CardTitle>
+                <ShoppingCart className="w-5 h-5 text-gray-400" />
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">286</p>
+                <span className="text-green-600 flex items-center text-sm">
+                  <TrendingUp className="w-4 h-4 mr-1" /> +8.2%
+                </span>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-indigo-50 to-white shadow-md hover:shadow-xl transition-all duration-300 rounded-2xl border border-indigo-100">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Avg. Sale Value</CardTitle>
+                <Users className="w-5 h-5 text-gray-400" />
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">₹345</p>
+                <span className="text-red-600 flex items-center text-sm">
+                  <TrendingDown className="w-4 h-4 mr-1" /> -2.1%
+                </span>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Charts */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Sales Trend</CardTitle>
+              </CardHeader>
+              <CardContent className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={salesTrend}>
+                    <XAxis dataKey="day" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line
+                      type="monotone"
+                      dataKey="sales"
+                      stroke="#4F46E5"
+                      strokeWidth={3}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Sales by Category</CardTitle>
+              </CardHeader>
+              <CardContent className="h-64">
+                <ResponsiveContainer>
+                  <PieChart>
+                    <Pie
+                      data={categoryData}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={90}
+                      label
+                    >
+                      {categoryData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Tables */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Top Selling */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Top Selling Products</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left border-b">
+                      <th className="py-2">Product</th>
+                      <th className="py-2">Units Sold</th>
+                      <th className="py-2">Revenue</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topProducts.map((p, i) => (
+                      <tr key={i} className="border-b">
+                        <td className="py-2">{p.name}</td>
+                        <td className="py-2">{p.sales}</td>
+                        <td className="py-2">₹{p.revenue}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </CardContent>
+            </Card>
+
+            {/* Low Stock */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Low Stock Alerts</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left border-b">
+                      <th className="py-2">Product</th>
+                      <th className="py-2">Stock Left</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {lowStock.map((p, i) => (
+                      <tr key={i} className="border-b">
+                        <td className="py-2">{p.name}</td>
+                        <td className="py-2">{p.stock}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </CardContent>
+            </Card>
+          </div>
+          {/* <p className="text-center text-gray-500">
             Monthly report coming soon...
-          </p>
+          </p> */}
         </TabsContent>
       </Tabs>
+
+      {/* Bottom bar for all tabs */}
+      <div className="w-full p-4 rounded-2xl bg-white grid gap-4 grid-cols-3 max-md:grid-cols-2 shadow-lg hover:shadow-xl transition-all duration-300">
+        <Card className="bg-gradient-to-br from-indigo-50 to-white shadow-md hover:shadow-xl transition-all duration-300 rounded-2xl border border-indigo-100">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Credit Outstanding</CardTitle>
+            <Users className="w-5 h-5 text-gray-400" />
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">₹4,450</p>
+            <span className="text-green-600 flex items-center text-sm">
+              <TrendingUp className="w-4 h-4 mr-1" /> From 3 customers
+            </span>
+          </CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-indigo-50 to-white shadow-md hover:shadow-xl transition-all duration-300 rounded-2xl border border-indigo-100">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Low Stock Items</CardTitle>
+            <Package className="w-5 h-5 text-gray-400" />
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">8</p>
+            <span className="text-green-600 flex items-center text-sm">
+              <TrendingUp className="w-4 h-4 mr-1" />
+              Items needed restocking
+            </span>
+          </CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-indigo-50 to-white shadow-md hover:shadow-xl transition-all duration-300 rounded-2xl border border-indigo-100">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Best Day</CardTitle>
+            <Calendar className="w-5 h-5 text-gray-400" />
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">Jan 13</p>
+            <span className="text-green-600 flex items-center text-sm">
+              <TrendingUp className="w-4 h-4 mr-1" /> 18,700 in sales
+            </span>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
