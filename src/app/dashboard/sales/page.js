@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Trash2, Plus, CreditCard } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 import {
   Dialog,
@@ -260,7 +261,7 @@ export default function SalePage() {
           <CardContent className="mt-1 space-y-2 h-[calc(100vh-200px)] overflow-y-auto">
             {cart.length === 0 ? (
               <div className="w-full h-full flex justify-center items-center">
-                <img src="/empty_cart.png" />
+                <Image src="/empty_cart.png" alt="cart_image" />
               </div>
             ) : (
               cart.map((item) => (
