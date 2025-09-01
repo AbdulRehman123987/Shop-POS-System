@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -71,169 +72,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const products = [
-  {
-    name: "Basmati Rice 5kg",
-    category: "Grains",
-    stock: 25,
-    costPrice: 450,
-    sellingPrice: 520,
-    barcode: "1234567890123",
-  },
-  {
-    name: "Cooking Oil 1L",
-    category: "Oil & Ghee",
-    stock: 15,
-    costPrice: 180,
-    sellingPrice: 210,
-    barcode: "2345678901234",
-  },
-  {
-    name: "Sugar 1kg",
-    category: "Sweeteners",
-    stock: 30,
-    costPrice: 65,
-    sellingPrice: 75,
-    barcode: "3456789012345",
-  },
-  {
-    name: "Tea Leaves 250g",
-    category: "Beverages",
-    stock: 8,
-    costPrice: 120,
-    sellingPrice: 140,
-    barcode: "4567890123456",
-  },
-  {
-    name: "Wheat Flour 10kg",
-    category: "Grains",
-    stock: 12,
-    costPrice: 380,
-    sellingPrice: 420,
-    barcode: "5678901234567",
-  },
-  {
-    name: "Basmati Rice 5kg",
-    category: "Grains",
-    stock: 25,
-    costPrice: 450,
-    sellingPrice: 520,
-    barcode: "1234567878790123",
-  },
-  {
-    name: "Cooking Oil 1L",
-    category: "Oil & Ghee",
-    stock: 15,
-    costPrice: 180,
-    sellingPrice: 210,
-    barcode: "2345678901090234",
-  },
-  {
-    name: "Sugar 1kg",
-    category: "Sweeteners",
-    stock: 30,
-    costPrice: 65,
-    sellingPrice: 75,
-    barcode: "345679012345",
-  },
-  {
-    name: "Basmati Rice 5kg",
-    category: "Grains",
-    stock: 25,
-    costPrice: 450,
-    sellingPrice: 520,
-    barcode: "1230904567890123",
-  },
-  {
-    name: "Cooking Oil 1L",
-    category: "Oil & Ghee",
-    stock: 15,
-    costPrice: 180,
-    sellingPrice: 210,
-    barcode: "2345555678901234",
-  },
-  {
-    name: "Sugar 1kg",
-    category: "Sweeteners",
-    stock: 30,
-    costPrice: 65,
-    sellingPrice: 75,
-    barcode: "3456788889012345",
-  },
-  {
-    name: "Basmati Rice 5kg",
-    category: "Grains",
-    stock: 25,
-    costPrice: 450,
-    sellingPrice: 520,
-    barcode: "12345679899890123",
-  },
-  {
-    name: "Cooking Oil 1L",
-    category: "Oil & Ghee",
-    stock: 15,
-    costPrice: 180,
-    sellingPrice: 210,
-    barcode: "23498085678901234",
-  },
-  {
-    name: "Sugar 1kg",
-    category: "Sweeteners",
-    stock: 30,
-    costPrice: 65,
-    sellingPrice: 75,
-    barcode: "3451231326789012345",
-  },
-  {
-    name: "Basmati Rice 5kg",
-    category: "Grains",
-    stock: 25,
-    costPrice: 450,
-    sellingPrice: 520,
-    barcode: "9091234567890123",
-  },
-  {
-    name: "Cooking Oil 1L",
-    category: "Oil & Ghee",
-    stock: 15,
-    costPrice: 180,
-    sellingPrice: 210,
-    barcode: "2341215678901234",
-  },
-  {
-    name: "Sugar 1kg",
-    category: "Sweeteners",
-    stock: 30,
-    costPrice: 65,
-    sellingPrice: 75,
-    barcode: "3456789879012345",
-  },
-  {
-    name: "Basmati Rice 5kg",
-    category: "Grains",
-    stock: 25,
-    costPrice: 450,
-    sellingPrice: 520,
-    barcode: "1234567980890123",
-  },
-  {
-    name: "Cooking Oil 1L",
-    category: "Oil & Ghee",
-    stock: 15,
-    costPrice: 180,
-    sellingPrice: 210,
-    barcode: "234567823901234",
-  },
-  {
-    name: "Sugar 1kg",
-    category: "Sweeteners",
-    stock: 30,
-    costPrice: 65,
-    sellingPrice: 75,
-    barcode: "3456789018782345",
-  },
-];
-
 const filters = [
   {
     key: "low-stock",
@@ -250,8 +88,17 @@ const filters = [
 ];
 
 export default function ProductsPage() {
-  const [active, setActive] = useState("in-stock");
+  const [active, setActive] = useState("");
+  const [products, setProducts] = useState([]);
   const [openProductDialog, setOpenProductDialog] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [searchProducts, setSearchProducts] = useState("");
+  const [error, setError] = useState(null);
+  const [deleteProduct, setDeleteProduct] = useState(null);
+  const [editProduct, setEditProduct] = useState(null);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+
   const totalProducts = products.length;
   const lowStock = products.filter((p) => p.stock < 10).length;
   const outOfStock = products.filter((p) => p.stock === 0).length;
@@ -259,9 +106,24 @@ export default function ProductsPage() {
   const rowsPerPage = 8;
   const [page, setPage] = useState(1);
 
-  const totalPages = Math.ceil(products.length / rowsPerPage);
+  const filteredProducts = products.filter((p) => {
+    const matchesSearch = p.name
+      .toLowerCase()
+      .includes(searchProducts.toLowerCase());
+
+    const matchesStock =
+      active === "low-stock"
+        ? p.stock > 0 && p.stock < 10
+        : active === "out-stock"
+        ? p.stock === 0
+        : true;
+
+    return matchesSearch && matchesStock;
+  });
+
+  const totalPages = Math.ceil(filteredProducts.length / rowsPerPage);
   const startIndex = (page - 1) * rowsPerPage;
-  const paginatedProducts = products.slice(
+  const paginatedProducts = filteredProducts.slice(
     startIndex,
     startIndex + rowsPerPage
   );
@@ -270,12 +132,14 @@ export default function ProductsPage() {
     name: z.string().min(2, "Name is required"),
     category: z.string().min(1, "Category is required"),
     stock: z.coerce.number().min(0),
-    barcode: z.string().min(3),
+    barcode: z.string().min(0),
     costPrice: z.coerce.number().min(0),
     sellingPrice: z.coerce.number().min(0),
+    alertstock: z.coerce.number().min(0),
   });
 
-  const form = useForm({
+  // Add Product form
+  const addForm = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
@@ -284,12 +148,138 @@ export default function ProductsPage() {
       barcode: "",
       costPrice: 0,
       sellingPrice: 0,
+      alertstock: 0,
     },
   });
 
-  function onSubmit(values) {
-    console.log(values);
+  // Edit Product form
+  const editForm = useForm({
+    resolver: zodResolver(formSchema),
+  });
+
+  async function onSubmit(values) {
+    try {
+      const {
+        name,
+        category,
+        stock,
+        alertstock,
+        costPrice,
+        sellingPrice,
+        barcode,
+      } = values;
+
+      const payload = {
+        name,
+        category,
+        stock,
+        alertstock,
+        costPrice,
+        sellingPrice,
+      };
+
+      if (barcode && barcode.trim() !== "") {
+        payload.barcode = barcode;
+      }
+
+      const endpoint = `${process.env.NEXT_PUBLIC_BASE_URL}/products`;
+      const res = await axios.post(endpoint, payload, {
+        headers: {
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
+        },
+      });
+      addForm.reset();
+      setOpenProductDialog(false);
+      fetchAllProducts();
+    } catch (error) {
+      console.error(
+        "Error uploading product:",
+        error.response?.data || error.message
+      );
+    }
   }
+
+  async function updateValue(values) {
+    try {
+      await axios.put(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/products/${editProduct.barcode}`,
+        values,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
+          },
+        }
+      );
+      fetchAllProducts();
+      setOpenEditDialog(false);
+    } catch (err) {
+      console.error("Update failed:", err.response?.data || err.message);
+    }
+  }
+
+  const fetchAllProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const endpoint = `${process.env.NEXT_PUBLIC_BASE_URL}/products`;
+
+      const { data } = await axios.get(endpoint, {
+        headers: {
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
+        },
+      });
+
+      setProducts(data);
+    } catch (err) {
+      console.error(
+        "Error fetching products:",
+        err.response?.data || err.message
+      );
+      setError(err.response?.data?.message || "Failed to fetch products");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const DeleteProductfromStore = async () => {
+    try {
+      await axios.delete(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/products/${deleteProduct.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
+          },
+        }
+      );
+      fetchAllProducts();
+      setOpenDeleteDialog(false);
+    } catch (err) {
+      console.error("Delete failed:", err.response?.data || err.message);
+    }
+  };
+
+  useEffect(() => {
+    if (editProduct) {
+      editForm.reset({
+        name: editProduct.name || "",
+        category: editProduct.category || "",
+        stock: editProduct.stock || 0,
+        barcode: editProduct.barcode || "",
+        costPrice: editProduct.costPrice || 0,
+        sellingPrice: editProduct.sellingPrice || 0,
+        alertstock: editProduct.alertstock || 0,
+      });
+    }
+  }, [editProduct, editForm]);
+
+  useEffect(() => {
+    fetchAllProducts();
+  }, []);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchProducts, active]);
 
   return (
     <div className="px-6 py-4 space-y-4 w-full h-[calc(100vh-90px)] overflow-y-auto">
@@ -315,14 +305,14 @@ export default function ProductsPage() {
               </DialogTitle>
             </DialogHeader>
 
-            <Form {...form}>
+            <Form {...addForm}>
               <form
-                onSubmit={form.handleSubmit(onSubmit)}
+                onSubmit={addForm.handleSubmit(onSubmit)}
                 className="space-y-4"
               >
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <FormField
-                    control={form.control}
+                    control={addForm.control}
                     name="name"
                     render={({ field }) => (
                       <FormItem>
@@ -335,7 +325,7 @@ export default function ProductsPage() {
                     )}
                   />
                   <FormField
-                    control={form.control}
+                    control={addForm.control}
                     name="category"
                     className="w-full"
                     render={({ field }) => (
@@ -353,6 +343,9 @@ export default function ProductsPage() {
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="grains">🌾 Grains</SelectItem>
+                              <SelectItem value="Essentials">
+                                Essentials
+                              </SelectItem>
                               <SelectItem value="oil-ghee">
                                 🛢 Oil & Ghee
                               </SelectItem>
@@ -386,7 +379,7 @@ export default function ProductsPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <FormField
-                    control={form.control}
+                    control={addForm.control}
                     name="stock"
                     render={({ field }) => (
                       <FormItem>
@@ -402,8 +395,64 @@ export default function ProductsPage() {
                       </FormItem>
                     )}
                   />
+
                   <FormField
-                    control={form.control}
+                    control={addForm.control}
+                    name="alertstock"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Alert Stock</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="0" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField
+                    control={addForm.control}
+                    name="costPrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Cost Price (₹)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="0.00"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={addForm.control}
+                    name="sellingPrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Selling Price (₹)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="0.00"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div>
+                  <FormField
+                    control={addForm.control}
                     name="barcode"
                     render={({ field }) => (
                       <FormItem>
@@ -450,51 +499,12 @@ export default function ProductsPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="costPrice"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Cost Price (₹)</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            placeholder="0.00"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="sellingPrice"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Selling Price (₹)</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            placeholder="0.00"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
                 <DialogFooter className="flex justify-end gap-2 pt-4">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => {
-                      form.reset();
+                      addForm.reset();
                       setOpenProductDialog(false);
                     }}
                     className="cursor-pointer"
@@ -584,6 +594,8 @@ export default function ProductsPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 z-10 h-5 w-5 text-black" />
           <Input
             placeholder="Search products..."
+            value={searchProducts}
+            onChange={(e) => setSearchProducts(e.target.value)}
             className="
           pl-10 pr-4 py-2
           rounded-md
@@ -629,7 +641,10 @@ export default function ProductsPage() {
               );
             })}
           </div>
-          <RotateCcw className="w-4 h-4 cursor-pointer text-gray-500" />
+          <RotateCcw
+            className="w-4 h-4 cursor-pointer text-gray-500"
+            onClick={() => setActive("")}
+          />
         </div>
       </div>
 
@@ -665,11 +680,9 @@ export default function ProductsPage() {
                       <Badge>In Stock</Badge>
                     )}
                   </TableCell>
-                  <TableCell>₹{product.costPrice.toFixed(2)}</TableCell>
-                  <TableCell>₹{product.sellingPrice.toFixed(2)}</TableCell>
-                  <TableCell className="text-green-600">
-                    ₹{profit.toFixed(2)}
-                  </TableCell>
+                  <TableCell>₹{product.costPrice}</TableCell>
+                  <TableCell>₹{product.sellingPrice}</TableCell>
+                  <TableCell className="text-green-600">₹{profit}</TableCell>
                   <TableCell>{product.barcode}</TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
@@ -683,10 +696,22 @@ export default function ProductsPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="cursor-pointer"
+                          onClick={() => {
+                            setEditProduct(product);
+                            setOpenEditDialog(true);
+                          }}
+                        >
                           <Pencil className="h-4 w-4 mr-2" /> Edit
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-500">
+                        <DropdownMenuItem
+                          className="text-red-500 cursor-pointer"
+                          onClick={() => {
+                            setDeleteProduct(product);
+                            setOpenDeleteDialog(true);
+                          }}
+                        >
                           <Trash2 className="h-4 w-4 mr-2" /> Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -752,6 +777,256 @@ export default function ProductsPage() {
           </PaginationContent>
         </Pagination>
       </div>
+      <Dialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Delete</DialogTitle>
+          </DialogHeader>
+          <p>
+            Are you sure you want to delete <b>{deleteProduct?.name}</b>?
+          </p>
+          <DialogFooter className="flex justify-end gap-2 mt-4">
+            <Button
+              variant="outline"
+              className="cursor-pointer"
+              onClick={() => setOpenDeleteDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              className="cursor-pointer"
+              onClick={DeleteProductfromStore}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={openEditDialog} onOpenChange={setOpenEditDialog}>
+        <DialogContent className="sm:max-w-lg max-w-[95%]">
+          <DialogHeader>
+            <DialogTitle>Edit Product</DialogTitle>
+          </DialogHeader>
+
+          <Form {...editForm}>
+            <form
+              onSubmit={editForm.handleSubmit(updateValue)}
+              className="space-y-4"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                  control={editForm.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Product Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter product name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="category"
+                  className="w-full"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700 font-medium">
+                        Category
+                      </FormLabel>
+                      <FormControl>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <SelectTrigger className="w-full rounded-lg border-gray-300 focus:ring-2">
+                            <SelectValue placeholder="Select a category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="grains">🌾 Grains</SelectItem>
+                            <SelectItem value="Essentials">
+                              Essentials
+                            </SelectItem>
+                            <SelectItem value="oil-ghee">
+                              🛢 Oil & Ghee
+                            </SelectItem>
+                            <SelectItem value="sweeteners">
+                              🍯 Sweeteners
+                            </SelectItem>
+                            <SelectItem value="beverages">
+                              🥤 Beverages
+                            </SelectItem>
+                            <SelectItem value="dairy">🥛 Dairy</SelectItem>
+                            <SelectItem value="snacks">🍪 Snacks</SelectItem>
+                            <SelectItem value="spices">🌶 Spices</SelectItem>
+                            <SelectItem value="bakery">🍞 Bakery</SelectItem>
+                            <SelectItem value="frozen">
+                              ❄️ Frozen Items
+                            </SelectItem>
+                            <SelectItem value="personal-care">
+                              🧴 Personal Care
+                            </SelectItem>
+                            <SelectItem value="household">
+                              🏠 Household Essentials
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                  control={editForm.control}
+                  name="stock"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Stock</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="Enter stock quantity"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={editForm.control}
+                  name="alertstock"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Alert Stock</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="0" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                  control={editForm.control}
+                  name="costPrice"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Cost Price (₹)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="0.00"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="sellingPrice"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Selling Price (₹)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="0.00"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div>
+                <FormField
+                  control={editForm.control}
+                  name="barcode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700 font-medium">
+                        Barcode
+                      </FormLabel>
+                      <FormControl>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            placeholder="Scan or enter barcode"
+                            className="rounded-xl border-gray-300 focus:ring-2 focus:ring-indigo-500"
+                            {...field}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="rounded-xl flex items-center gap-2 cursor-pointer"
+                            onClick={() => {
+                              // 👉 open scanner modal or trigger barcode scanner here
+                              console.log("Open barcode scanner");
+                            }}
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-4 w-4 text-indigo-600"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M4 7V4a1 1 0 011-1h3M4 17v3a1 1 0 001 1h3m10-3v3a1 1 0 01-1 1h-3m4-13V4a1 1 0 00-1-1h-3M7 7h.01M7 17h.01M17 7h.01M17 17h.01"
+                              />
+                            </svg>
+                            Scan
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <DialogFooter className="flex justify-end gap-2 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    editForm.reset();
+                    setOpenEditDialog(false);
+                  }}
+                  className="cursor-pointer"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="bg-black text-white hover:bg-gray-800 cursor-pointer"
+                >
+                  Update Product
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -62,210 +63,7 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-
-const customers = [
-  {
-    id: 1,
-    name: "Ali Khan",
-    email: "ali.khan@example.com",
-    phone: "+92-300-1234567",
-    outstandingBalance: 2500,
-    totalPaid: 15000,
-    totalPurchases: 17500,
-    lastPurchaseDate: "2025-08-10",
-  },
-  {
-    id: 2,
-    name: "Sara Ahmed",
-    email: "sara.ahmed@example.com",
-    phone: "+92-321-9876543",
-    outstandingBalance: 0,
-    totalPaid: 22000,
-    totalPurchases: 22000,
-    lastPurchaseDate: "2025-08-15",
-  },
-  {
-    id: 3,
-    name: "Usman Raza",
-    email: "usman.raza@example.com",
-    phone: "+92-345-5432167",
-    outstandingBalance: 500,
-    totalPaid: 10500,
-    totalPurchases: 11000,
-    lastPurchaseDate: "2025-07-30",
-  },
-  {
-    id: 4,
-    name: "Fatima Noor",
-    email: "fatima.noor@example.com",
-    phone: "+92-333-6547890",
-    outstandingBalance: 1200,
-    totalPaid: 8800,
-    totalPurchases: 10000,
-    lastPurchaseDate: "2025-08-20",
-  },
-  {
-    id: 5,
-    name: "Hamza Tariq",
-    email: "hamza.tariq@example.com",
-    phone: "+92-301-7778889",
-    outstandingBalance: 0,
-    totalPaid: 5000,
-    totalPurchases: 5000,
-    lastPurchaseDate: "2025-08-25",
-  },
-  {
-    id: 6,
-    name: "Ayesha Malik",
-    email: "ayesha.malik@example.com",
-    phone: "+92-302-4455667",
-    outstandingBalance: 300,
-    totalPaid: 9700,
-    totalPurchases: 10000,
-    lastPurchaseDate: "2025-08-22",
-  },
-  {
-    id: 7,
-    name: "Bilal Hussain",
-    email: "bilal.hussain@example.com",
-    phone: "+92-344-1112233",
-    outstandingBalance: 0,
-    totalPaid: 15000,
-    totalPurchases: 15000,
-    lastPurchaseDate: "2025-08-18",
-  },
-  {
-    id: 8,
-    name: "Mariam Zahra",
-    email: "mariam.zahra@example.com",
-    phone: "+92-315-2233445",
-    outstandingBalance: 600,
-    totalPaid: 7400,
-    totalPurchases: 8000,
-    lastPurchaseDate: "2025-08-12",
-  },
-  {
-    id: 9,
-    name: "Imran Sheikh",
-    email: "imran.sheikh@example.com",
-    phone: "+92-300-9988776",
-    outstandingBalance: 2000,
-    totalPaid: 13000,
-    totalPurchases: 15000,
-    lastPurchaseDate: "2025-07-28",
-  },
-  {
-    id: 10,
-    name: "Noor Jahan",
-    email: "noor.jahan@example.com",
-    phone: "+92-312-6655443",
-    outstandingBalance: 0,
-    totalPaid: 4500,
-    totalPurchases: 4500,
-    lastPurchaseDate: "2025-08-24",
-  },
-  {
-    id: 11,
-    name: "Zain Ali",
-    email: "zain.ali@example.com",
-    phone: "+92-331-8899776",
-    outstandingBalance: 750,
-    totalPaid: 12250,
-    totalPurchases: 13000,
-    lastPurchaseDate: "2025-08-05",
-  },
-  {
-    id: 12,
-    name: "Sana Iqbal",
-    email: "sana.iqbal@example.com",
-    phone: "+92-303-4455778",
-    outstandingBalance: 0,
-    totalPaid: 8000,
-    totalPurchases: 8000,
-    lastPurchaseDate: "2025-08-21",
-  },
-  {
-    id: 13,
-    name: "Kashif Mehmood",
-    email: "kashif.mehmood@example.com",
-    phone: "+92-321-5544332",
-    outstandingBalance: 1000,
-    totalPaid: 14000,
-    totalPurchases: 15000,
-    lastPurchaseDate: "2025-08-14",
-  },
-  {
-    id: 14,
-    name: "Hina Shah",
-    email: "hina.shah@example.com",
-    phone: "+92-335-6677889",
-    outstandingBalance: 0,
-    totalPaid: 9500,
-    totalPurchases: 9500,
-    lastPurchaseDate: "2025-08-19",
-  },
-  {
-    id: 15,
-    name: "Rizwan Ali",
-    email: "rizwan.ali@example.com",
-    phone: "+92-345-7766554",
-    outstandingBalance: 450,
-    totalPaid: 9050,
-    totalPurchases: 9500,
-    lastPurchaseDate: "2025-08-09",
-  },
-  {
-    id: 16,
-    name: "Nadia Farooq",
-    email: "nadia.farooq@example.com",
-    phone: "+92-310-2233114",
-    outstandingBalance: 0,
-    totalPaid: 12500,
-    totalPurchases: 12500,
-    lastPurchaseDate: "2025-08-23",
-  },
-  {
-    id: 17,
-    name: "Omer Siddiqui",
-    email: "omer.siddiqui@example.com",
-    phone: "+92-300-6677884",
-    outstandingBalance: 1500,
-    totalPaid: 10500,
-    totalPurchases: 12000,
-    lastPurchaseDate: "2025-08-16",
-  },
-  {
-    id: 18,
-    name: "Mehwish Anwar",
-    email: "mehwish.anwar@example.com",
-    phone: "+92-313-5544667",
-    outstandingBalance: 0,
-    totalPaid: 6000,
-    totalPurchases: 6000,
-    lastPurchaseDate: "2025-08-11",
-  },
-  {
-    id: 19,
-    name: "Shahid Iqbal",
-    email: "shahid.iqbal@example.com",
-    phone: "+92-321-4433221",
-    outstandingBalance: 800,
-    totalPaid: 9200,
-    totalPurchases: 10000,
-    lastPurchaseDate: "2025-08-08",
-  },
-  {
-    id: 20,
-    name: "Laiba Hassan",
-    email: "laiba.hassan@example.com",
-    phone: "+92-312-9988775",
-    outstandingBalance: 0,
-    totalPaid: 7000,
-    totalPurchases: 7000,
-    lastPurchaseDate: "2025-08-17",
-  },
-];
-
+import { useRouter } from "next/navigation";
 const filters = [
   {
     key: "paid",
@@ -282,13 +80,30 @@ const filters = [
 ];
 
 export default function CustomersPage() {
-  const [active, setActive] = useState("paid");
+  const router = useRouter();
+  const [active, setActive] = useState("");
+  const [customers, setAllCustomers] = useState([]);
+  const [searchCustomer, setSearchCustomer] = useState("");
   const [openCustomerModal, setOpenCustomerModal] = useState(false);
   const [page, setPage] = useState(1);
   const rowsPerPage = 6;
 
-  // stats
-  const totalCustomers = customers.length;
+  const filteredCustomers = customers.filter((c) => {
+    const matchesSearch = c.name
+      .toLowerCase()
+      .includes(searchCustomer.toLowerCase());
+
+    const matchesPaid =
+      active === "unpaid"
+        ? c.pendingAmount > 0
+        : active === "paid"
+        ? c.pendingAmount === 0
+        : true;
+
+    return matchesSearch && matchesPaid;
+  });
+
+  const totalCustomers = filteredCustomers.length;
   const creditCustomers = customers.filter(
     (c) => c.outstandingBalance > 0
   ).length;
@@ -301,9 +116,9 @@ export default function CustomersPage() {
   ).length;
 
   // pagination
-  const totalPages = Math.ceil(customers.length / rowsPerPage);
+  const totalPages = Math.ceil(filteredCustomers.length / rowsPerPage);
   const startIndex = (page - 1) * rowsPerPage;
-  const paginatedCustomers = customers.slice(
+  const paginatedCustomers = filteredCustomers.slice(
     startIndex,
     startIndex + rowsPerPage
   );
@@ -323,9 +138,52 @@ export default function CustomersPage() {
     },
   });
 
-  function onSubmit(values) {
-    console.log(values);
+  async function onSubmit(values) {
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/customers`,
+        values,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
+          },
+        }
+      );
+      form.reset();
+      setOpenCustomerModal(false);
+      fetchAllCustomers();
+    } catch (error) {
+      if (error.response) {
+        console.error("❌ API Error:", error.response.data);
+      } else if (error.request) {
+        console.error("❌ No response from server:", error.request);
+      } else {
+        console.error("❌ Unexpected error:", error.message);
+      }
+    }
   }
+
+  const fetchAllCustomers = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/customers`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
+          },
+        }
+      );
+      setAllCustomers(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllCustomers();
+  }, []);
 
   return (
     <div className="px-6 py-4 space-y-4 w-full h-[calc(100vh-90px)] overflow-y-auto">
@@ -353,8 +211,6 @@ export default function CustomersPage() {
                 Add New Customer
               </DialogTitle>
             </DialogHeader>
-
-            {/* Form with react-hook-form */}
 
             <Form {...form}>
               <form
@@ -476,7 +332,9 @@ export default function CustomersPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">₹{totalOutstanding}</p>
+            <p className="text-3xl font-bold">
+              ₹{totalOutstanding ? totalOutstanding : 0}
+            </p>
           </CardContent>
         </Card>
 
@@ -500,11 +358,12 @@ export default function CustomersPage() {
           <Input
             placeholder="Search Customers..."
             className="pl-10 pr-4 py-2"
+            value={searchCustomer}
+            onChange={(e) => setSearchCustomer(e.target.value)}
           />
         </div>
 
         <div className="w-full max-w-xs flex items-center gap-2 p-1 rounded-lg shadow-md bg-white border border-gray-200">
-          {/* <RotateCcw className="w-4 h-4 cursor-pointer text-gray-500" /> */}
           {/* Filter title button */}
           <div className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-xl font-medium shadow-sm">
             <FunnelPlus className="w-4 h-4" />
@@ -536,7 +395,10 @@ export default function CustomersPage() {
               );
             })}
           </div>
-          <RotateCcw className="w-4 h-4 cursor-pointer text-gray-500" />
+          <RotateCcw
+            className="w-4 h-4 cursor-pointer text-gray-500"
+            onClick={() => setActive("")}
+          />
         </div>
       </div>
 
@@ -546,28 +408,32 @@ export default function CustomersPage() {
           <TableHeader>
             <TableRow className="sticky top-0 z-10 bg-indigo-50">
               <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Total Purchases</TableHead>
-              <TableHead>Total Paid</TableHead>
-              <TableHead>Outstanding</TableHead>
-              <TableHead>Last Purchase</TableHead>
+              <TableHead className="text-center">Email</TableHead>
+              <TableHead className="text-center">Phone</TableHead>
+              <TableHead className="text-center">Total Purchases</TableHead>
+              <TableHead className="text-center">Total Paid</TableHead>
+              <TableHead className="text-center">Outstanding</TableHead>
+              <TableHead className="text-center">Last Purchase</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {paginatedCustomers.map((c) => (
-              <TableRow key={c.id}>
+              <TableRow key={c._id}>
                 <TableCell className="font-medium">{c.name}</TableCell>
-                <TableCell className="text-gray-700">{c.email}</TableCell>
-                <TableCell className="text-gray-700">{c.phone}</TableCell>
-                <TableCell className="text-gray-700">
-                  ₹{c.totalPurchases.toLocaleString()}
+                <TableCell className="text-gray-700 text-center">
+                  {c.email}
                 </TableCell>
-                <TableCell className="text-gray-700">
-                  ₹{c.totalPaid.toLocaleString()}
+                <TableCell className="text-gray-700 text-center">
+                  {c.phone}
                 </TableCell>
-                <TableCell>
+                <TableCell className="text-gray-700 text-center">
+                  ₹{c.totalPurchases ? c.totalPurchases.toLocaleString() : 0}
+                </TableCell>
+                <TableCell className="text-gray-700 text-center">
+                  ₹{c.totalPaid ? c.totalPaid.toLocaleString() : 0}
+                </TableCell>
+                <TableCell className="text-center">
                   {c.outstandingBalance > 0 ? (
                     <Badge variant="destructive">
                       ₹{c.outstandingBalance.toLocaleString()}
@@ -578,7 +444,15 @@ export default function CustomersPage() {
                     </Badge>
                   )}
                 </TableCell>
-                <TableCell>{c.lastPurchaseDate}</TableCell>
+                <TableCell className="text-center">
+                  {c.lastPurchaseDate ? (
+                    c.lastPurchaseDate
+                  ) : (
+                    <Badge className="bg-green-500 text-white hover:bg-green-600">
+                      New
+                    </Badge>
+                  )}
+                </TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -591,7 +465,12 @@ export default function CustomersPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem className="cursor-pointer">
+                      <DropdownMenuItem
+                        className="cursor-pointer"
+                        onClick={() =>
+                          router.push(`/dashboard/customers/${c._id}`)
+                        }
+                      >
                         <Eye className="h-4 w-4 mr-2" /> View
                       </DropdownMenuItem>
                       <DropdownMenuItem className="text-red-500 cursor-pointer">
@@ -657,6 +536,61 @@ export default function CustomersPage() {
           </PaginationContent>
         </Pagination>
       </div>
+
+      {/* <Dialog open={openViewModal} onOpenChange={setOpenViewModal}>
+        <DialogContent className="sm:max-w-lg max-w-[95%]">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">
+              Customer Details
+            </DialogTitle>
+          </DialogHeader>
+
+          {selectedCustomer ? (
+            <div className="space-y-4">
+              <div className="flex justify-between">
+                <span className="font-semibold">Name:</span>
+                <span>{selectedCustomer.name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-semibold">Email:</span>
+                <span>{selectedCustomer.email}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-semibold">Phone:</span>
+                <span>{selectedCustomer.phone}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-semibold">Total Purchases:</span>
+                <span>₹{selectedCustomer.totalPurchases || 0}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-semibold">Total Paid:</span>
+                <span>₹{selectedCustomer.totalPaid || 0}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-semibold">Outstanding:</span>
+                <span>
+                  {selectedCustomer.outstandingBalance > 0 ? (
+                    <Badge variant="destructive">
+                      ₹{selectedCustomer.outstandingBalance}
+                    </Badge>
+                  ) : (
+                    <Badge className="bg-green-500 text-white hover:bg-green-600">
+                      Paid
+                    </Badge>
+                  )}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-semibold">Last Purchase:</span>
+                <span>{selectedCustomer.lastPurchaseDate || "New"}</span>
+              </div>
+            </div>
+          ) : (
+            <p>No customer selected</p>
+          )}
+        </DialogContent>
+      </Dialog> */}
     </div>
   );
 }

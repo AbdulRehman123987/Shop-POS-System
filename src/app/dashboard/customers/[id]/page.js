@@ -43,6 +43,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useParams } from "next/navigation";
 
 const filters = [
   {
@@ -93,6 +94,8 @@ const orders = [
 ];
 
 export default function CustomerOrdersPage() {
+  const { id } = useParams();
+  console.log("id", id);
   const [active, setActive] = useState("paid");
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [viewModal, setViewModal] = useState(false);
