@@ -332,6 +332,47 @@ export default function SalePage() {
     }
   };
 
+  const createSale = async (paymentMode) => {
+    try {
+      const products = cart.map((item) => ({
+        productId: item.id,
+        stock: item.qty,
+      }));
+      let payload;
+      if (paymentMode === "credit") {
+        payload = {
+          products,
+          paymentMode: "credit",
+          paidAmount: 0,
+          customerId: selectedCustomer._id,
+        };
+      } else {
+        payload = {
+          products,
+          discount: 0,
+          paymentMode: "cash",
+          payNow: true,
+        };
+      }
+
+      const endpoint = `${process.env.NEXT_PUBLIC_BASE_URL}/sales`;
+      const response = await axios.post(endpoint, payload, {
+        headers: {
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
+        },
+      });
+      setCart([]);
+      setSellModal(false);
+      setAddCustomerModal(false);
+      setOutstandingModal(false);
+    } catch (error) {
+      console.error(
+        "Error making sale:",
+        error.response?.data || error.message
+      );
+    }
+  };
+
   useEffect(() => {
     fetchAllCustomers();
   }, []);
@@ -421,11 +462,7 @@ export default function SalePage() {
                   <DialogFooter className="flex gap-3 justify-end pt-4">
                     <Button
                       className="bg-green-600 text-white cursor-pointer"
-                      onClick={() => {
-                        setSellModal(false);
-                        console.log(cart);
-                        setCart([]);
-                      }}
+                      onClick={() => createSale("cash")}
                     >
                       Paid
                     </Button>
@@ -516,10 +553,7 @@ export default function SalePage() {
               <Button
                 disabled={!selectedCustomer}
                 className="cursor-pointer"
-                onClick={() => {
-                  setOutstandingModal(false);
-                  setCart([]); // clear cart after assigning
-                }}
+                onClick={() => createSale("credit")}
               >
                 Add
               </Button>

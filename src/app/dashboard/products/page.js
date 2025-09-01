@@ -202,7 +202,7 @@ export default function ProductsPage() {
   async function updateValue(values) {
     try {
       await axios.put(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/products/${editProduct.barcode}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/products/${editProduct.id}`,
         values,
         {
           headers: {

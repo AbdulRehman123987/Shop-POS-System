@@ -79,6 +79,15 @@ const filters = [
   },
 ];
 
+function formatDate(date) {
+  const d = new Date(date);
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+
+  return `${day}-${month}-${year}`;
+}
+
 export default function CustomersPage() {
   const router = useRouter();
   const [active, setActive] = useState("");
@@ -104,11 +113,9 @@ export default function CustomersPage() {
   });
 
   const totalCustomers = filteredCustomers.length;
-  const creditCustomers = customers.filter(
-    (c) => c.outstandingBalance > 0
-  ).length;
+  const creditCustomers = customers.filter((c) => c.pendingAmount > 0).length;
   const totalOutstanding = customers.reduce(
-    (acc, c) => acc + c.outstandingBalance,
+    (acc, c) => acc + c.pendingAmount,
     0
   );
   const activeThisMonth = customers.filter(
@@ -155,11 +162,11 @@ export default function CustomersPage() {
       fetchAllCustomers();
     } catch (error) {
       if (error.response) {
-        console.error("❌ API Error:", error.response.data);
+        console.error("API Error:", error.response.data);
       } else if (error.request) {
-        console.error("❌ No response from server:", error.request);
+        console.error("No response from server:", error.request);
       } else {
-        console.error("❌ Unexpected error:", error.message);
+        console.error("Unexpected error:", error.message);
       }
     }
   }
@@ -428,15 +435,15 @@ export default function CustomersPage() {
                   {c.phone}
                 </TableCell>
                 <TableCell className="text-gray-700 text-center">
-                  ₹{c.totalPurchases ? c.totalPurchases.toLocaleString() : 0}
+                  ₹{c.totalSpent ? c.totalSpent.toLocaleString() : 0}
                 </TableCell>
                 <TableCell className="text-gray-700 text-center">
                   ₹{c.totalPaid ? c.totalPaid.toLocaleString() : 0}
                 </TableCell>
                 <TableCell className="text-center">
-                  {c.outstandingBalance > 0 ? (
+                  {c.pendingAmount > 0 ? (
                     <Badge variant="destructive">
-                      ₹{c.outstandingBalance.toLocaleString()}
+                      ₹{c.pendingAmount.toLocaleString()}
                     </Badge>
                   ) : (
                     <Badge className="bg-green-500 text-white hover:bg-green-600">
@@ -446,7 +453,7 @@ export default function CustomersPage() {
                 </TableCell>
                 <TableCell className="text-center">
                   {c.lastPurchaseDate ? (
-                    c.lastPurchaseDate
+                    formatDate(c.lastPurchaseDate)
                   ) : (
                     <Badge className="bg-green-500 text-white hover:bg-green-600">
                       New
