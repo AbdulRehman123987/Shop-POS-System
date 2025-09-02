@@ -39,151 +39,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const productDummyData = [
-  {
-    id: 1,
-    name: "Basmati Rice 5kg",
-    category: "Grains",
-    price: 520,
-    stock: 25,
-    barcode: "1234567890123",
-  },
-  {
-    id: 2,
-    name: "Cooking Oil 1L",
-    category: "Oil & Ghee",
-    price: 210,
-    stock: 15,
-    barcode: "2345678901234",
-  },
-  {
-    id: 3,
-    name: "Sugar 1kg",
-    category: "Sweeteners",
-    price: 75,
-    stock: 30,
-    barcode: "3456789012345",
-  },
-  {
-    id: 4,
-    name: "Tea Leaves 250g",
-    category: "Beverages",
-    price: 140,
-    stock: 8,
-    barcode: "4567890123456",
-  },
-  {
-    id: 5,
-    name: "Wheat Flour 10kg",
-    category: "Grains",
-    price: 420,
-    stock: 12,
-    barcode: "5678901234567",
-  },
-  {
-    id: 6,
-    name: "Milk 1L",
-    category: "Dairy",
-    price: 55,
-    stock: 20,
-    barcode: "6789012345678",
-  },
-  {
-    id: 7,
-    name: "Bread",
-    category: "Bakery",
-    price: 25,
-    stock: 18,
-    barcode: "7890123456789",
-  },
-  {
-    id: 8,
-    name: "Eggs (12 pcs)",
-    category: "Dairy",
-    price: 84,
-    stock: 24,
-    barcode: "8901234567890",
-  },
-  {
-    id: 10,
-    name: "Wheat Flour 10kg",
-    category: "Grains",
-    price: 420,
-    stock: 12,
-    barcode: "56783901234567",
-  },
-  {
-    id: 11,
-    name: "Milk 1L",
-    category: "Dairy",
-    price: 55,
-    stock: 20,
-    barcode: "67892012345678",
-  },
-  {
-    id: 12,
-    name: "Bread",
-    category: "Bakery",
-    price: 25,
-    stock: 18,
-    barcode: "78901123456789",
-  },
-  {
-    id: 13,
-    name: "Eggs (12 pcs)",
-    category: "Dairy",
-    price: 84,
-    stock: 24,
-    barcode: "89012234567890",
-  },
-  {
-    id: 14,
-    name: "Tea Leaves 250g",
-    category: "Beverages",
-    price: 140,
-    stock: 8,
-    barcode: "45673890123456",
-  },
-  {
-    id: 15,
-    name: "Wheat Flour 10kg",
-    category: "Grains",
-    price: 420,
-    stock: 12,
-    barcode: "56782901234567",
-  },
-  {
-    id: 16,
-    name: "Milk 1L",
-    category: "Dairy",
-    price: 55,
-    stock: 20,
-    barcode: "611789012345678",
-  },
-  {
-    id: 17,
-    name: "Bread",
-    category: "Bakery",
-    price: 25,
-    stock: 18,
-    barcode: "789110123456789",
-  },
-  {
-    id: 18,
-    name: "Eggs (12 pcs)",
-    category: "Dairy",
-    price: 84,
-    stock: 24,
-    barcode: "890123114567890",
-  },
-];
-
-// const customers = [
-//   { id: 1, name: "Ali Khan" },
-//   { id: 2, name: "Sara Ahmed" },
-//   { id: 3, name: "Usman Iqbal" },
-// ];
-
 export default function SalePage() {
   const [cart, setCart] = useState([]);
   const [productsData, setAllProductsData] = useState([]);
@@ -249,6 +104,21 @@ export default function SalePage() {
     costPrice: z.coerce.number().min(0),
     sellingPrice: z.coerce.number().min(0),
     alertstock: z.coerce.number().min(0),
+  });
+
+  const addCustomerSchema = z.object({
+    name: z.string().min(2, "Name is required"),
+    email: z.string().email("Invalid email"),
+    phone: z.string().min(11, "Phone number is required"),
+  });
+
+  const addCustomerForm = useForm({
+    resolver: zodResolver(addCustomerSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+    },
   });
 
   const form = useForm({
@@ -372,6 +242,28 @@ export default function SalePage() {
       );
     }
   };
+
+  async function handleAddCustomer(values) {
+    try {
+      console.log(values);
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/customers`,
+        values,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
+          },
+        }
+      );
+      addCustomerForm.reset();
+      fetchAllCustomers();
+      setAddCustomerModal(false);
+      setOutstandingModal(true);
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   useEffect(() => {
     fetchAllCustomers();
@@ -525,7 +417,7 @@ export default function SalePage() {
               {/* Add New Customer */}
               <Button
                 variant="outline"
-                className="w-full"
+                className="w-full cursor-pointer"
                 onClick={() => {
                   setOutstandingModal(false);
                   setAddCustomerModal(true);
@@ -569,20 +461,20 @@ export default function SalePage() {
             <DialogContent className="sm:max-w-lg max-w-[95%]">
               <DialogHeader>
                 <DialogTitle className="text-xl font-semibold">
-                  Add New Product
+                  Add New Customer
                 </DialogTitle>
               </DialogHeader>
 
               {/* Form with react-hook-form */}
 
-              <Form {...form}>
+              <Form {...addCustomerForm}>
                 <form
-                  onSubmit={form.handleSubmit(onSubmit)}
+                  onSubmit={addCustomerForm.handleSubmit(handleAddCustomer)}
                   className="space-y-4"
                 >
                   <div className="grid grid-cols-1">
                     <FormField
-                      control={form.control}
+                      control={addCustomerForm.control}
                       name="name"
                       render={({ field }) => (
                         <FormItem>
@@ -601,7 +493,7 @@ export default function SalePage() {
 
                   <div className="grid grid-cols-1">
                     <FormField
-                      control={form.control}
+                      control={addCustomerForm.control}
                       name="email"
                       render={({ field }) => (
                         <FormItem>
@@ -621,7 +513,7 @@ export default function SalePage() {
 
                   <div className="grid grid-cols-1">
                     <FormField
-                      control={form.control}
+                      control={addCustomerForm.control}
                       name="phone"
                       render={({ field }) => (
                         <FormItem>
@@ -643,7 +535,7 @@ export default function SalePage() {
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => form.reset()}
+                      onClick={() => addCustomerForm.reset()}
                       className="cursor-pointer"
                     >
                       Cancel
@@ -651,10 +543,6 @@ export default function SalePage() {
                     <Button
                       type="submit"
                       className="bg-black text-white hover:bg-gray-800 cursor-pointer"
-                      onClick={() => {
-                        setAddCustomerModal(false);
-                        setOutstandingModal(true);
-                      }}
                     >
                       Add Customer
                     </Button>
