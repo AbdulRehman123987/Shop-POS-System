@@ -113,7 +113,7 @@ export default function ProductsPage() {
 
     const matchesStock =
       active === "low-stock"
-        ? p.stock > 0 && p.stock < 10
+        ? p.stock === p.alertstock
         : active === "out-stock"
         ? p.stock === 0
         : true;
@@ -674,7 +674,7 @@ export default function ProductsPage() {
                   <TableCell>
                     {product.stock === 0 ? (
                       <Badge variant="destructive">Out of Stock</Badge>
-                    ) : product.stock < 10 ? (
+                    ) : product.stock === product.alertstock ? (
                       <Badge className="bg-red-500 text-white">Low Stock</Badge>
                     ) : (
                       <Badge>In Stock</Badge>
