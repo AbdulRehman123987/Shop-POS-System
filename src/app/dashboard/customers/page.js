@@ -438,7 +438,7 @@ export default function CustomersPage() {
                   ₹{c.totalSpent ? c.totalSpent.toLocaleString() : 0}
                 </TableCell>
                 <TableCell className="text-gray-700 text-center">
-                  ₹{c.totalPaid ? c.totalPaid.toLocaleString() : 0}
+                  ₹{c.paid ? c.paid.toLocaleString() : 0}
                 </TableCell>
                 <TableCell className="text-center">
                   {c.pendingAmount > 0 ? (

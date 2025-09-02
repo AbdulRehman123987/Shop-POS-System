@@ -131,46 +131,68 @@ export default function CustomerOrdersPage() {
     startIndex + rowsPerPage
   );
 
+  const fetchCustomer = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/customers/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
+          },
+        }
+      );
+
+      const data = res.data;
+      setCustomer(data);
+
+      // 🔹 Map API response sales into orders table format
+      const mappedOrders = data.sales.map((s) => ({
+        orderId: s._id,
+        date: new Date(s.createdAt).toLocaleDateString(),
+        total: s.total,
+        totalPaid: s.paidAmount,
+        outstanding: s.total - s.paidAmount,
+        products: s.products.map((p) => ({
+          name: p.product ? p.product.name : "Unknown Product",
+          qty: p.stock,
+          price: p.price,
+        })),
+      }));
+
+      setOrders(mappedOrders);
+    } catch (err) {
+      console.error("Error fetching customer:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchCustomer = async () => {
-      try {
-        setLoading(true);
-        const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/customers/${id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
-            },
-          }
-        );
-
-        const data = res.data;
-        setCustomer(data);
-
-        // 🔹 Map API response sales into orders table format
-        const mappedOrders = data.sales.map((s) => ({
-          orderId: s._id,
-          date: new Date(s.createdAt).toLocaleDateString(),
-          total: s.total,
-          totalPaid: s.paidAmount,
-          outstanding: s.total - s.paidAmount,
-          products: s.products.map((p) => ({
-            name: p.product ? p.product.name : "Unknown Product",
-            qty: p.stock,
-            price: p.price,
-          })),
-        }));
-
-        setOrders(mappedOrders);
-      } catch (err) {
-        console.error("Error fetching customer:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (id) fetchCustomer();
   }, [id]);
+
+  async function payOutandingBalance() {
+    try {
+      const res = await axios.patch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/customers/pay-sale`,
+        {
+          saleId: selectedOrder.orderId,
+          amount: parseInt(payAmount),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
+          },
+        }
+      );
+      setPayModal(false);
+      setPayAmount("");
+      fetchCustomer();
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   return (
     <div className="w-full h-[85vh] mx-auto p-2">
@@ -185,7 +207,7 @@ export default function CustomerOrdersPage() {
           <div className="bg-green-100 text-green-700 px-3 py-1.5 rounded-lg shadow text-sm">
             Total Paid:{" "}
             <span className="font-bold">
-              Rs {custom.totalPay ? custom.totalPay : ""}
+              Rs {customer.paid ? customer.paid : ""}
             </span>
           </div>
           <div className="bg-red-100 text-red-700 px-3 py-1.5 rounded-lg shadow text-sm">
@@ -373,19 +395,7 @@ export default function CustomerOrdersPage() {
             />
           </div>
           <DialogFooter>
-            <Button
-              className="cursor-pointer"
-              onClick={() => {
-                console.log(
-                  "Paid:",
-                  payAmount,
-                  "for order:",
-                  selectedOrder?.orderId
-                );
-                setPayModal(false);
-                setPayAmount("");
-              }}
-            >
+            <Button className="cursor-pointer" onClick={payOutandingBalance}>
               Pay Now
             </Button>
           </DialogFooter>
