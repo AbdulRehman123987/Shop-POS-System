@@ -1,6 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import axios from "axios";
 import {
   Table,
   TableBody,
@@ -44,6 +45,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useParams } from "next/navigation";
+import { custom } from "zod";
 
 const filters = [
   {
@@ -60,68 +62,135 @@ const filters = [
   },
 ];
 
-const orders = [
-  {
-    orderId: "ORD-1001",
-    date: "2025-08-01",
-    total: 2500,
-    totalPaid: 2000,
-    outstanding: 500,
-    products: [
-      { name: "Sugar 5kg", qty: 1, price: 750 },
-      { name: "Flour 10kg", qty: 2, price: 1200 },
-    ],
-  },
-  {
-    orderId: "ORD-1002",
-    date: "2025-08-02",
-    total: 1800,
-    totalPaid: 1800,
-    outstanding: 0,
-    products: [{ name: "Oil 5L", qty: 1, price: 1800 }],
-  },
-  {
-    orderId: "ORD-1003",
-    date: "2025-08-03",
-    total: 3200,
-    totalPaid: 2700,
-    outstanding: 500,
-    products: [
-      { name: "Rice 10kg", qty: 1, price: 950 },
-      { name: "Oil 3L", qty: 2, price: 2250 },
-    ],
-  },
-];
+// const orders = [
+//   {
+//     orderId: "ORD-1001",
+//     date: "2025-08-01",
+//     total: 2500,
+//     totalPaid: 2000,
+//     outstanding: 500,
+//     products: [
+//       { name: "Sugar 5kg", qty: 1, price: 750 },
+//       { name: "Flour 10kg", qty: 2, price: 1200 },
+//     ],
+//   },
+//   {
+//     orderId: "ORD-1002",
+//     date: "2025-08-02",
+//     total: 1800,
+//     totalPaid: 1800,
+//     outstanding: 0,
+//     products: [{ name: "Oil 5L", qty: 1, price: 1800 }],
+//   },
+//   {
+//     orderId: "ORD-1003",
+//     date: "2025-08-03",
+//     total: 3200,
+//     totalPaid: 2700,
+//     outstanding: 500,
+//     products: [
+//       { name: "Rice 10kg", qty: 1, price: 950 },
+//       { name: "Oil 3L", qty: 2, price: 2250 },
+//     ],
+//   },
+// ];
 
 export default function CustomerOrdersPage() {
   const { id } = useParams();
-  console.log("id", id);
-  const [active, setActive] = useState("paid");
+  const [active, setActive] = useState();
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [viewModal, setViewModal] = useState(false);
+  const [customer, setCustomer] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searchOrderVal, setSearchOrderVal] = useState("");
   const [page, setPage] = useState(1);
   const rowsPerPage = 5;
   const [payModal, setPayModal] = useState(false);
   const [payAmount, setPayAmount] = useState("");
-  const totalPages = Math.ceil(orders.length / rowsPerPage);
+
+  const filteredOrders = orders.filter((ord) => {
+    const matchesSearch = ord.orderId
+      .toLowerCase()
+      .includes(searchOrderVal.toLowerCase());
+
+    const matchesPaid =
+      active === "unpaid"
+        ? ord.outstanding > 0
+        : active === "paid"
+        ? ord.outstanding === 0
+        : true;
+
+    return matchesSearch && matchesPaid;
+  });
+
+  const totalPages = Math.ceil(filteredOrders.length / rowsPerPage);
   const startIndex = (page - 1) * rowsPerPage;
-  const paginatedOrders = orders.slice(startIndex, startIndex + rowsPerPage);
+  const paginatedOrders = filteredOrders.slice(
+    startIndex,
+    startIndex + rowsPerPage
+  );
+
+  useEffect(() => {
+    const fetchCustomer = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/customers/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
+            },
+          }
+        );
+
+        const data = res.data;
+        setCustomer(data);
+
+        // 🔹 Map API response sales into orders table format
+        const mappedOrders = data.sales.map((s) => ({
+          orderId: s._id,
+          date: new Date(s.createdAt).toLocaleDateString(),
+          total: s.total,
+          totalPaid: s.paidAmount,
+          outstanding: s.total - s.paidAmount,
+          products: s.products.map((p) => ({
+            name: p.product ? p.product.name : "Unknown Product",
+            qty: p.stock,
+            price: p.price,
+          })),
+        }));
+
+        setOrders(mappedOrders);
+      } catch (err) {
+        console.error("Error fetching customer:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) fetchCustomer();
+  }, [id]);
 
   return (
     <div className="w-full h-[85vh] mx-auto p-2">
       {/* Customer Header */}
       <div className="w-full mb-4 flex flex-col justify-center p-3 shadow-md rounded-xl bg-white">
-        <h1 className="text-xl font-bold">Ali Ahmed</h1>
+        <h1 className="text-xl font-bold">{customer.name}</h1>
         <div className="flex items-center gap-2 mb-2">
           <Phone size={18} />
-          <p className="text-lg font-normal">0301-1234567</p>
+          <p className="text-lg font-normal">{customer.phone}</p>
         </div>
         <div className="flex gap-3">
           <div className="bg-green-100 text-green-700 px-3 py-1.5 rounded-lg shadow text-sm">
-            Total Paid: <span className="font-bold">Rs 4350</span>
+            Total Paid:{" "}
+            <span className="font-bold">
+              Rs {custom.totalPay ? custom.totalPay : ""}
+            </span>
           </div>
           <div className="bg-red-100 text-red-700 px-3 py-1.5 rounded-lg shadow text-sm">
-            Outstanding: <span className="font-bold">Rs 850</span>
+            Outstanding:{" "}
+            <span className="font-bold">Rs {customer.pendingAmount}</span>
           </div>
         </div>
       </div>
@@ -132,6 +201,8 @@ export default function CustomerOrdersPage() {
           <Input
             placeholder="Search Order by id..."
             className="pl-10 pr-4 py-2"
+            value={searchOrderVal}
+            onChange={(e) => setSearchOrderVal(e.target.value)}
           />
         </div>
 
@@ -165,7 +236,10 @@ export default function CustomerOrdersPage() {
               );
             })}
           </div>
-          <RotateCcw className="w-4 h-4 cursor-pointer text-gray-500" />
+          <RotateCcw
+            className="w-4 h-4 cursor-pointer text-gray-500"
+            onClick={() => setActive()}
+          />
         </div>
       </div>
 
