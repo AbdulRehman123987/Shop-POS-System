@@ -20,6 +20,10 @@ import {
   Cell,
   ResponsiveContainer,
   LineChart,
+  BarChart,
+  CartesianGrid,
+  Bar,
+  Legend,
   Line,
   XAxis,
   YAxis,
@@ -47,24 +51,28 @@ const categoryData = [
   { name: "Others", value: 8, color: "#F43F5E" },
 ];
 
-const topProducts = [
-  { name: "Basmati Rice 5kg", sales: 320, revenue: 166400 },
-  { name: "Cooking Oil 1L", sales: 270, revenue: 56700 },
-  { name: "Sugar 1kg", sales: 250, revenue: 18750 },
-  { name: "Tea Leaves 250g", sales: 180, revenue: 25200 },
-];
-
-const lowStock = [
-  { name: "Tea Leaves 250g", stock: 8 },
-  { name: "Cooking Oil 1L", stock: 12 },
-  { name: "Bread", stock: 6 },
-  { name: "Eggs (12 pcs)", stock: 10 },
-];
-
 export default function ReportsPage() {
   const [activeTab, setActiveTab] = useState("daily");
   const [reportData, setReportData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [allProducts, setAllProducts] = useState([]);
+  const [lowStock, setLowStock] = useState([]);
+  const [topProducts, setTopProducts] = useState([]);
+
+  const fetchAllProducts = async () => {
+    try {
+      const endpoint = `${process.env.NEXT_PUBLIC_BASE_URL}/products`;
+
+      const { data } = await axios.get(endpoint, {
+        headers: {
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
+        },
+      });
+      setAllProducts(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const fetchReport = async (type) => {
     try {
@@ -89,9 +97,36 @@ export default function ReportsPage() {
     }
   };
 
+  const fetchTopSalesPro = async () => {
+    try {
+      const endpoint = `${process.env.NEXT_PUBLIC_BASE_URL}/sales/analytics/best-sellers?criteria=quantity&limit=5`;
+
+      const { data } = await axios.get(endpoint, {
+        headers: {
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
+        },
+      });
+      setTopProducts(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllProducts();
+    fetchTopSalesPro();
+  }, []);
+
   useEffect(() => {
     fetchReport(activeTab);
   }, [activeTab]);
+
+  useEffect(() => {
+    const lowStockProducts = allProducts
+      .filter((product) => product.stock <= 10)
+      .map((product) => ({ name: product.name, stock: product.stock }));
+    setLowStock(lowStockProducts);
+  }, [allProducts]);
 
   return (
     <div className="w-full h-[85vh] overflow-y-auto p-4 space-y-4">
@@ -202,14 +237,21 @@ export default function ReportsPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
+            {/* <Card>
               <CardHeader>
                 <CardTitle>Sales Trend</CardTitle>
               </CardHeader>
               <CardContent className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={salesTrend}>
-                    <XAxis dataKey="day" />
+                  <LineChart
+                    data={[
+                      {
+                        label: reportData?.type || activeTab,
+                        sales: reportData?.totalSales || 0,
+                      },
+                    ]}
+                  >
+                    <XAxis dataKey="label" />
                     <YAxis />
                     <Tooltip />
                     <Line
@@ -219,6 +261,32 @@ export default function ReportsPage() {
                       strokeWidth={3}
                     />
                   </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card> */}
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Sales Trend</CardTitle>
+              </CardHeader>
+              <CardContent className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={[
+                      {
+                        label: reportData?.type || activeTab,
+                        sales: reportData?.totalSales || 0,
+                      },
+                    ]}
+                    barSize={40}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="label" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="sales" fill="#33ccff" radius={[8, 8, 0, 0]} />
+                  </BarChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
@@ -270,9 +338,9 @@ export default function ReportsPage() {
               <tbody>
                 {topProducts.map((p, i) => (
                   <tr key={i} className="border-b">
-                    <td className="py-2">{p.name}</td>
-                    <td className="py-2">{p.sales}</td>
-                    <td className="py-2">₹{p.revenue}</td>
+                    <td className="py-2">{p.product.name}</td>
+                    <td className="py-2">{p.totalQuantity}</td>
+                    <td className="py-2">Rs {p.totalProfit}</td>
                   </tr>
                 ))}
               </tbody>
@@ -306,7 +374,7 @@ export default function ReportsPage() {
         </Card>
       </div>
       {/* Bottom bar for all tabs */}
-      <div className="w-full p-4 rounded-2xl bg-white grid gap-4 grid-cols-3 max-md:grid-cols-2 shadow-lg hover:shadow-xl transition-all duration-300">
+      <div className="w-full p-4 rounded-2xl bg-white grid gap-4 grid-cols-2 max-md:grid-cols-2 shadow-lg hover:shadow-xl transition-all duration-300">
         <Card className="bg-gradient-to-br from-indigo-50 to-white shadow-md hover:shadow-xl transition-all duration-300 rounded-2xl border border-indigo-100">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Credit Outstanding</CardTitle>
@@ -325,14 +393,16 @@ export default function ReportsPage() {
             <Package className="w-5 h-5 text-gray-400" />
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">8</p>
+            <p className="text-2xl font-bold">
+              {lowStock ? lowStock.length : "0"}
+            </p>
             <span className="text-green-600 flex items-center text-sm">
               <TrendingUp className="w-4 h-4 mr-1" />
               Items needed restocking
             </span>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-indigo-50 to-white shadow-md hover:shadow-xl transition-all duration-300 rounded-2xl border border-indigo-100">
+        {/* <Card className="bg-gradient-to-br from-indigo-50 to-white shadow-md hover:shadow-xl transition-all duration-300 rounded-2xl border border-indigo-100">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Best Day</CardTitle>
             <Calendar className="w-5 h-5 text-gray-400" />
@@ -343,7 +413,7 @@ export default function ReportsPage() {
               <TrendingUp className="w-4 h-4 mr-1" /> 18,700 in sales
             </span>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
     </div>
   );

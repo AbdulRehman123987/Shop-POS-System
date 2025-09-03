@@ -235,6 +235,7 @@ export default function SalePage() {
       setSellModal(false);
       setAddCustomerModal(false);
       setOutstandingModal(false);
+      fetchAllProducts();
     } catch (error) {
       console.error(
         "Error making sale:",
