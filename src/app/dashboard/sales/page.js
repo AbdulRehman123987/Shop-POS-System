@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, ShoppingCart, Barcode } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Trash2, Plus, CreditCard } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import axios from "axios";
 
 import {
   Dialog,
@@ -38,161 +39,47 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const productsData = [
-  {
-    id: 1,
-    name: "Basmati Rice 5kg",
-    category: "Grains",
-    price: 520,
-    stock: 25,
-    barcode: "1234567890123",
-  },
-  {
-    id: 2,
-    name: "Cooking Oil 1L",
-    category: "Oil & Ghee",
-    price: 210,
-    stock: 15,
-    barcode: "2345678901234",
-  },
-  {
-    id: 3,
-    name: "Sugar 1kg",
-    category: "Sweeteners",
-    price: 75,
-    stock: 30,
-    barcode: "3456789012345",
-  },
-  {
-    id: 4,
-    name: "Tea Leaves 250g",
-    category: "Beverages",
-    price: 140,
-    stock: 8,
-    barcode: "4567890123456",
-  },
-  {
-    id: 5,
-    name: "Wheat Flour 10kg",
-    category: "Grains",
-    price: 420,
-    stock: 12,
-    barcode: "5678901234567",
-  },
-  {
-    id: 6,
-    name: "Milk 1L",
-    category: "Dairy",
-    price: 55,
-    stock: 20,
-    barcode: "6789012345678",
-  },
-  {
-    id: 7,
-    name: "Bread",
-    category: "Bakery",
-    price: 25,
-    stock: 18,
-    barcode: "7890123456789",
-  },
-  {
-    id: 8,
-    name: "Eggs (12 pcs)",
-    category: "Dairy",
-    price: 84,
-    stock: 24,
-    barcode: "8901234567890",
-  },
-  {
-    id: 10,
-    name: "Wheat Flour 10kg",
-    category: "Grains",
-    price: 420,
-    stock: 12,
-    barcode: "56783901234567",
-  },
-  {
-    id: 11,
-    name: "Milk 1L",
-    category: "Dairy",
-    price: 55,
-    stock: 20,
-    barcode: "67892012345678",
-  },
-  {
-    id: 12,
-    name: "Bread",
-    category: "Bakery",
-    price: 25,
-    stock: 18,
-    barcode: "78901123456789",
-  },
-  {
-    id: 13,
-    name: "Eggs (12 pcs)",
-    category: "Dairy",
-    price: 84,
-    stock: 24,
-    barcode: "89012234567890",
-  },
-  {
-    id: 14,
-    name: "Tea Leaves 250g",
-    category: "Beverages",
-    price: 140,
-    stock: 8,
-    barcode: "45673890123456",
-  },
-  {
-    id: 15,
-    name: "Wheat Flour 10kg",
-    category: "Grains",
-    price: 420,
-    stock: 12,
-    barcode: "56782901234567",
-  },
-  {
-    id: 16,
-    name: "Milk 1L",
-    category: "Dairy",
-    price: 55,
-    stock: 20,
-    barcode: "611789012345678",
-  },
-  {
-    id: 17,
-    name: "Bread",
-    category: "Bakery",
-    price: 25,
-    stock: 18,
-    barcode: "789110123456789",
-  },
-  {
-    id: 18,
-    name: "Eggs (12 pcs)",
-    category: "Dairy",
-    price: 84,
-    stock: 24,
-    barcode: "890123114567890",
-  },
-];
-
-const customers = [
-  { id: 1, name: "Ali Khan" },
-  { id: 2, name: "Sara Ahmed" },
-  { id: 3, name: "Usman Iqbal" },
-];
-
 export default function SalePage() {
   const [cart, setCart] = useState([]);
+  const [productsData, setAllProductsData] = useState([]);
   const [openProductDialog, setOpenProductDialog] = useState(false);
   const [search, setSearch] = useState("");
   const [sellModal, setSellModal] = useState(false);
   const [outstandingModal, setOutstandingModal] = useState(false);
   const [addCustomerModal, setAddCustomerModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState("");
+  const [customers, setAllCustomers] = useState([]);
   const [customerSearch, setCustomerSearch] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
+  const fetchAllProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const endpoint = `${process.env.NEXT_PUBLIC_BASE_URL}/products`;
+
+      const { data } = await axios.get(endpoint, {
+        headers: {
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
+        },
+      });
+
+      setAllProductsData(data);
+    } catch (err) {
+      console.error(
+        "Error fetching products:",
+        err.response?.data || err.message
+      );
+      setError(err.response?.data?.message || "Failed to fetch products");
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchAllProducts();
+  }, []);
   const addToCart = (product) => {
     setCart((prev) => {
       const exist = prev.find((p) => p.id === product.id);
@@ -213,9 +100,25 @@ export default function SalePage() {
     name: z.string().min(2, "Name is required"),
     category: z.string().min(1, "Category is required"),
     stock: z.coerce.number().min(0),
-    barcode: z.string().min(3),
+    barcode: z.string().min(0),
     costPrice: z.coerce.number().min(0),
     sellingPrice: z.coerce.number().min(0),
+    alertstock: z.coerce.number().min(0),
+  });
+
+  const addCustomerSchema = z.object({
+    name: z.string().min(2, "Name is required"),
+    email: z.string().email("Invalid email"),
+    phone: z.string().min(11, "Phone number is required"),
+  });
+
+  const addCustomerForm = useForm({
+    resolver: zodResolver(addCustomerSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+    },
   });
 
   const form = useForm({
@@ -227,18 +130,145 @@ export default function SalePage() {
       barcode: "",
       costPrice: 0,
       sellingPrice: 0,
+      alertstock: 0,
     },
   });
 
-  function onSubmit(values) {
-    console.log(values);
+  async function onSubmit(values) {
+    try {
+      const {
+        name,
+        category,
+        stock,
+        alertstock,
+        costPrice,
+        sellingPrice,
+        barcode,
+      } = values;
+
+      const payload = {
+        name,
+        category,
+        stock,
+        alertstock,
+        costPrice,
+        sellingPrice,
+      };
+
+      if (barcode && barcode.trim() !== "") {
+        payload.barcode = barcode;
+      }
+
+      const endpoint = `${process.env.NEXT_PUBLIC_BASE_URL}/products`;
+      const res = await axios.post(endpoint, payload, {
+        headers: {
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
+        },
+      });
+      form.reset();
+      setOpenProductDialog(false);
+      fetchAllProducts();
+    } catch (error) {
+      console.error(
+        "Error uploading product:",
+        error.response?.data || error.message
+      );
+    }
   }
 
   const filteredCustomers = customers.filter((c) =>
     c.name.toLowerCase().includes(customerSearch.toLowerCase())
   );
 
-  const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const total = cart.reduce(
+    (sum, item) => sum + item.sellingPrice * item.qty,
+    0
+  );
+
+  const fetchAllCustomers = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/customers`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
+          },
+        }
+      );
+      setAllCustomers(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const createSale = async (paymentMode) => {
+    try {
+      const products = cart.map((item) => ({
+        productId: item.id,
+        stock: item.qty,
+      }));
+      let payload;
+      if (paymentMode === "credit") {
+        payload = {
+          products,
+          paymentMode: "credit",
+          paidAmount: 0,
+          customerId: selectedCustomer._id,
+        };
+      } else {
+        payload = {
+          products,
+          discount: 0,
+          paymentMode: "cash",
+          payNow: true,
+        };
+      }
+
+      const endpoint = `${process.env.NEXT_PUBLIC_BASE_URL}/sales`;
+      const response = await axios.post(endpoint, payload, {
+        headers: {
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
+        },
+      });
+      setCart([]);
+      setSellModal(false);
+      setAddCustomerModal(false);
+      setOutstandingModal(false);
+      fetchAllProducts();
+    } catch (error) {
+      console.error(
+        "Error making sale:",
+        error.response?.data || error.message
+      );
+    }
+  };
+
+  async function handleAddCustomer(values) {
+    try {
+      console.log(values);
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/customers`,
+        values,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
+          },
+        }
+      );
+      addCustomerForm.reset();
+      fetchAllCustomers();
+      setAddCustomerModal(false);
+      setOutstandingModal(true);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    fetchAllCustomers();
+  }, []);
 
   return (
     <div className="w-full h-[calc(100vh-80px)] overflow-y-auto">
@@ -261,7 +291,12 @@ export default function SalePage() {
           <CardContent className="mt-1 space-y-2 h-[calc(100vh-200px)] overflow-y-auto">
             {cart.length === 0 ? (
               <div className="w-full h-full flex justify-center items-center">
-                <Image src="/empty_cart.png" alt="cart_image" />
+                <Image
+                  width={200}
+                  height={200}
+                  src="/empty_cart.png"
+                  alt="cart_image"
+                />
               </div>
             ) : (
               cart.map((item) => (
@@ -271,7 +306,7 @@ export default function SalePage() {
                 >
                   <span className="font-medium">{item.name}</span>
                   <span className="text-sm text-gray-600">
-                    {item.qty} × ₹{item.price}
+                    {item.qty} × ₹{item.sellingPrice}
                   </span>
                   <button
                     onClick={() =>
@@ -308,7 +343,7 @@ export default function SalePage() {
                       >
                         <span>{item.name}</span>
                         <span>
-                          {item.qty} × ₹{item.price}
+                          {item.qty} × ₹{item.sellingPrice}
                         </span>
                       </div>
                     ))}
@@ -320,10 +355,7 @@ export default function SalePage() {
                   <DialogFooter className="flex gap-3 justify-end pt-4">
                     <Button
                       className="bg-green-600 text-white cursor-pointer"
-                      onClick={() => {
-                        setSellModal(false);
-                        setCart([]);
-                      }}
+                      onClick={() => createSale("cash")}
                     >
                       Paid
                     </Button>
@@ -363,7 +395,7 @@ export default function SalePage() {
                 {filteredCustomers.length > 0 ? (
                   filteredCustomers.map((c) => (
                     <div
-                      key={c.id}
+                      key={c._id}
                       onClick={() => setSelectedCustomer(c)}
                       className={`p-3 rounded-lg border cursor-pointer transition hover:bg-accent ${
                         selectedCustomer?.id === c.id
@@ -386,7 +418,7 @@ export default function SalePage() {
               {/* Add New Customer */}
               <Button
                 variant="outline"
-                className="w-full"
+                className="w-full cursor-pointer"
                 onClick={() => {
                   setOutstandingModal(false);
                   setAddCustomerModal(true);
@@ -414,11 +446,7 @@ export default function SalePage() {
               <Button
                 disabled={!selectedCustomer}
                 className="cursor-pointer"
-                onClick={() => {
-                  console.log("Outstanding assigned to:", selectedCustomer);
-                  setOutstandingModal(false);
-                  setCart([]); // clear cart after assigning
-                }}
+                onClick={() => createSale("credit")}
               >
                 Add
               </Button>
@@ -434,20 +462,20 @@ export default function SalePage() {
             <DialogContent className="sm:max-w-lg max-w-[95%]">
               <DialogHeader>
                 <DialogTitle className="text-xl font-semibold">
-                  Add New Product
+                  Add New Customer
                 </DialogTitle>
               </DialogHeader>
 
               {/* Form with react-hook-form */}
 
-              <Form {...form}>
+              <Form {...addCustomerForm}>
                 <form
-                  onSubmit={form.handleSubmit(onSubmit)}
+                  onSubmit={addCustomerForm.handleSubmit(handleAddCustomer)}
                   className="space-y-4"
                 >
                   <div className="grid grid-cols-1">
                     <FormField
-                      control={form.control}
+                      control={addCustomerForm.control}
                       name="name"
                       render={({ field }) => (
                         <FormItem>
@@ -466,7 +494,7 @@ export default function SalePage() {
 
                   <div className="grid grid-cols-1">
                     <FormField
-                      control={form.control}
+                      control={addCustomerForm.control}
                       name="email"
                       render={({ field }) => (
                         <FormItem>
@@ -486,7 +514,7 @@ export default function SalePage() {
 
                   <div className="grid grid-cols-1">
                     <FormField
-                      control={form.control}
+                      control={addCustomerForm.control}
                       name="phone"
                       render={({ field }) => (
                         <FormItem>
@@ -508,7 +536,7 @@ export default function SalePage() {
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => form.reset()}
+                      onClick={() => addCustomerForm.reset()}
                       className="cursor-pointer"
                     >
                       Cancel
@@ -516,11 +544,6 @@ export default function SalePage() {
                     <Button
                       type="submit"
                       className="bg-black text-white hover:bg-gray-800 cursor-pointer"
-                      onClick={() => {
-                        console.log("Customer Added!");
-                        setAddCustomerModal(false);
-                        setOutstandingModal(true);
-                      }}
                     >
                       Add Customer
                     </Button>
@@ -585,7 +608,6 @@ export default function SalePage() {
                 </DialogHeader>
 
                 {/* Form with react-hook-form */}
-
                 <Form {...form}>
                   <form
                     onSubmit={form.handleSubmit(onSubmit)}
@@ -628,6 +650,9 @@ export default function SalePage() {
                                 <SelectContent>
                                   <SelectItem value="grains">
                                     🌾 Grains
+                                  </SelectItem>
+                                  <SelectItem value="Essentials">
+                                    Essentials
                                   </SelectItem>
                                   <SelectItem value="oil-ghee">
                                     🛢 Oil & Ghee
@@ -686,46 +711,15 @@ export default function SalePage() {
                           </FormItem>
                         )}
                       />
+
                       <FormField
                         control={form.control}
-                        name="barcode"
+                        name="alertstock"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-gray-700 font-medium">
-                              Barcode
-                            </FormLabel>
+                            <FormLabel>Alert Stock</FormLabel>
                             <FormControl>
-                              <div className="flex items-center gap-2">
-                                <Input
-                                  placeholder="Scan or enter barcode"
-                                  className="rounded-xl border-gray-300 focus:ring-2 focus:ring-indigo-500"
-                                  {...field}
-                                />
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  className="rounded-xl flex items-center gap-2 cursor-pointer"
-                                  onClick={() => {
-                                    console.log("Open barcode scanner");
-                                  }}
-                                >
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-4 w-4 text-indigo-600"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M4 7V4a1 1 0 011-1h3M4 17v3a1 1 0 001 1h3m10-3v3a1 1 0 01-1 1h-3m4-13V4a1 1 0 00-1-1h-3M7 7h.01M7 17h.01M17 7h.01M17 17h.01"
-                                    />
-                                  </svg>
-                                  Scan
-                                </Button>
-                              </div>
+                              <Input type="number" placeholder="0" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -765,6 +759,55 @@ export default function SalePage() {
                                 placeholder="0.00"
                                 {...field}
                               />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div>
+                      <FormField
+                        control={form.control}
+                        name="barcode"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-gray-700 font-medium">
+                              Barcode
+                            </FormLabel>
+                            <FormControl>
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  placeholder="Scan or enter barcode"
+                                  className="rounded-xl border-gray-300 focus:ring-2 focus:ring-indigo-500"
+                                  {...field}
+                                />
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="rounded-xl flex items-center gap-2 cursor-pointer"
+                                  onClick={() => {
+                                    // 👉 open scanner modal or trigger barcode scanner here
+                                    console.log("Open barcode scanner");
+                                  }}
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-4 w-4 text-indigo-600"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M4 7V4a1 1 0 011-1h3M4 17v3a1 1 0 001 1h3m10-3v3a1 1 0 01-1 1h-3m4-13V4a1 1 0 00-1-1h-3M7 7h.01M7 17h.01M17 7h.01M17 17h.01"
+                                    />
+                                  </svg>
+                                  Scan
+                                </Button>
+                              </div>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -816,7 +859,7 @@ export default function SalePage() {
                   <h3 className="font-semibold text-lg">{product.name}</h3>
                   <p className="text-sm text-gray-500">{product.category}</p>
                   <p className="text-xl font-bold text-primary">
-                    ₹{product.price}
+                    ₹{product.sellingPrice}
                   </p>
                   <p className="text-sm text-gray-600">{product.barcode}</p>
                   <span
